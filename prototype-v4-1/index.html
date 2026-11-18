@@ -32,11 +32,11 @@ body{background:radial-gradient(ellipse at 50% 0%,#203d54 0%,#0c1c31 55%,#07111e
 .tool .symbol{font-size:clamp(13px,calc(var(--pad-size)*.133),26px);font-weight:800}
 .tool .tool-name{font-size:clamp(6px,calc(var(--pad-size)*.044),9px);font-weight:850;letter-spacing:.035em}
 .tool.delete{width:29%;border-right:1px solid #3a5268;background:#233449;color:#ffa6b0}
-.tool.space{gap:2px;width:29%;position:relative;isolation:isolate;overflow:hidden;border-left:1px solid #91c4ff;background:linear-gradient(150deg,#bbdfff 0%,#76b7f4 46%,#4d90e3 100%);color:#163b68;box-shadow:inset 0 1px 0 #ffffffa6,inset 0 -2px 6px #235b9a33;transition:background .22s cubic-bezier(.22,1,.36,1),filter .2s ease,box-shadow .22s ease}
-.tool.space .symbol{font-size:clamp(24px,calc(var(--pad-size)*.21),38px);line-height:1;color:#163b68;text-shadow:0 1px 0 #ffffff9e;font-weight:950}
-.tool.space .tool-name{color:#163b68;font-size:clamp(7px,calc(var(--pad-size)*.058),11px);letter-spacing:.025em}
+.tool.space{gap:2px;width:29%;position:relative;isolation:isolate;overflow:hidden;border-left:1px solid #f4bad7;background:linear-gradient(150deg,#ffe7f0 0%,#f1b4d2 48%,#e69fc4 100%);color:#602b48;box-shadow:inset 0 1px 0 #ffffffa6,inset 0 -2px 6px #8c426c22;transition:background .22s cubic-bezier(.22,1,.36,1),filter .2s ease,box-shadow .22s ease}
+.tool.space .symbol{font-size:clamp(24px,calc(var(--pad-size)*.21),38px);line-height:1;color:#602b48;text-shadow:0 1px 0 #ffffff9e;font-weight:950}
+.tool.space .tool-name{color:#602b48;font-size:clamp(7px,calc(var(--pad-size)*.058),11px);letter-spacing:.025em}
 .tool.space .symbol,.tool.space .tool-name{position:relative;top:-5px;z-index:1}
-.tool.space::after{content:'';position:absolute;z-index:0;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 50%,#ffffffb3 0%,#d4ecff77 31%,#ffffff00 75%);opacity:0}
+.tool.space::after{content:'';position:absolute;z-index:0;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 50%,#ffffffb3 0%,#ffe2f07a 31%,#ffffff00 75%);opacity:0}
 .tool.space.space-pop::after{animation:spaceFlash .28s ease-out both}
 .tool.space.space-pop .symbol{animation:spaceBounce .28s cubic-bezier(.22,1,.36,1)}
 @keyframes spaceFlash{0%{opacity:.45;transform:scale(.55)}100%{opacity:0;transform:scale(1.55)}}
@@ -49,7 +49,7 @@ body{background:radial-gradient(ellipse at 50% 0%,#203d54 0%,#0c1c31 55%,#07111e
 .stick-knob{position:relative;z-index:1;width:38%;height:38%;border-radius:50%;background:linear-gradient(140deg,#85fff3,#1f9bb4);box-shadow:0 0 0 2px #11263d,0 0 12px #48ddd66b;transform:translateX(var(--knob-shift,0px));transition:transform .04s linear}
 .tool.is-pressed{filter:brightness(1.4)}
 .tool.delete.is-pressed{background:#ab3348;color:#fff}
-.tool.space.is-pressed{background:linear-gradient(140deg,#d6eaff,#92c5ff);color:#153a68;box-shadow:inset 0 0 0 2px #ffffff8f;filter:brightness(1.04)}
+.tool.space.is-pressed{background:linear-gradient(140deg,#fff0f6,#f2c4dc);color:#602b48;box-shadow:inset 0 0 0 2px #ffffff8f;filter:brightness(1.04)}
 .tool.cursor.is-pressed{background:#1a4550}
 .magnifier{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:3px;padding:4px 2px 3px;background:radial-gradient(ellipse at 50% 44%,#22415b,#0b2235 78%);pointer-events:none;opacity:0;visibility:hidden;transition:opacity .22s cubic-bezier(.22,1,.36,1),visibility 0s linear .22s}
 .magnifier.visible{opacity:1;visibility:visible;transition:opacity .22s cubic-bezier(.22,1,.36,1),visibility 0s}
