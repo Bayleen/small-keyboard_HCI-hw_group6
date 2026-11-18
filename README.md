@@ -1,11 +1,13 @@
 # StarFlick — HCI Bakeoff 2, Group 6
 
-One repository, four independent text-entry prototypes.
+One repository, five independent text-entry prototypes.
 
 - `prototype-v1/` — original grouped-flick design.
 - `prototype-v2/` — revised radial gesture controls and cursor.
 - `prototype-v3/` — finger-aware offset guide and stricter cancel.
 - `prototype-v4/` — **Magnified QWERTY**, 26 miniature keys in the bottom half with large touch-driven selection preview in the top half, and delete/joystick/space controls when idle.
+
+- `prototype-v4-1/` — **Stable magnified QWERTY**: steady five-key preview, pink Space, two F/J home anchors, and locked test-page zoom. V4 is retained for comparison.
 
 Each prototype has its own `index.html` and `calibrate.html`; open the calibration page in the same phone/browser to make sure the keyboard measures exactly **25.4 mm × 25.4 mm**.
 
