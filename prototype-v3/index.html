@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#081223">
+<title>StarFlick V3 — Smartwatch Keyboard</title>
+<style>
+:root{--pad-size:145px;--fg:#ebf3ff;--muted:#a6bad8;--edge:#324966;--bg:#081223;--accent:#71beff}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%}
+body{background:radial-gradient(circle at 50% 10%,#1d3457,#081223 66%);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.shell{max-width:470px;margin:0 auto;padding:24px 18px 48px;display:flex;flex-direction:column;align-items:center;gap:18px}
+.phrase-panel{width:100%;border-radius:17px;padding:16px 18px;background:#152540;border:1px solid var(--edge)}
+.field-label{display:block;color:#a6bad8;font-size:12px;font-weight:750;letter-spacing:.09em;text-transform:uppercase;margin-bottom:7px}
+.phrase-panel .target,.phrase-panel .entered{font-size:20px;font-weight:600;overflow-wrap:anywhere;min-height:28px;line-height:1.35;letter-spacing:.01em}
+.phrase-panel .entered{color:#95d8ff;min-height:56px;font-size:19px;white-space:pre-wrap;user-select:none;-webkit-user-select:none}
+.phrase-panel .entered .caret{display:inline-block;width:2px;height:1.1em;vertical-align:-.17em;background:#72caff;animation:blink 1s step-end infinite}
+@keyframes blink{50%{opacity:.18}}
+.phrase-panel .divider{height:1px;background:#344866;margin:13px 0}
+.pad-wrap{display:flex;justify-content:center;width:100%;padding:12px 0 7px}
+/* In-trial touchable controls and their overlays are wholly contained inside this 1-inch pad. */
+#pad{position:relative;width:var(--pad-size);height:var(--pad-size);flex-shrink:0;border-radius:16px;overflow:hidden;border:2px solid #819ab8;background:#0d1b31;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none;-webkit-tap-highlight-color:transparent;box-shadow:0 16px 34px #0007}
+#keyGrid{position:absolute;inset:5px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:4px}
+.key{min-width:0;min-height:0;border:1px solid #456589;border-radius:7px;background:linear-gradient(155deg,#344c6e,#1d314c);color:#f0f7ff;font-weight:800;font-size:clamp(9px,calc(var(--pad-size)*.077),15px);letter-spacing:-.06em;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:1px;touch-action:none}
+.key .hint{font-size:clamp(7px,calc(var(--pad-size)*.047),10px);font-weight:700;color:#a8d2ff;letter-spacing:0}
+.key.space-key{background:linear-gradient(150deg,#398ee8,#1a4d9b);border-color:#8bc3ff;letter-spacing:0;font-size:clamp(8px,calc(var(--pad-size)*.062),12px)}
+.key.pressing{background:#426e9f}
+/* All gesture and feedback graphics are clipped to the calibrated 1-inch pad.
+   The preview is VISUALLY OFFSET from the pressed key to avoid a finger blocking letters.
+   Gesture directions are measured from the initial touch point (not the offset visual preview). */
+#dial{display:none;position:absolute;inset:0;z-index:5;pointer-events:none;background:rgba(7,17,34,.93);isolation:isolate}
+#dial.visible{display:block}
+#dial .outer-zone{position:absolute;inset:0;background:transparent;transition:background .08s ease}
+#dial .ring{position:absolute;left:var(--ring-x,16%);top:var(--ring-y,12%);width:67%;height:67%;border-radius:50%;border:2px solid #83bcf5;background:radial-gradient(circle at 50% 46%,#2e5077 0%,#1b3050 69%,#12223c 100%);box-shadow:inset 0 0 13px #0008,0 0 0 1px #355478;transition:opacity .08s ease,border-color .08s ease}
+#dial .ring::before{content:"";position:absolute;inset:22%;border:1px dashed #7296bf66;border-radius:50%}
+#dial .seg{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px;font-weight:850;color:#e9f5ff;transition:opacity .08s ease,background .08s ease;line-height:1}
+#dial .seg .letter{font-size:clamp(15px,calc(var(--pad-size)*.127),25px)}
+#dial .seg .mini{font-size:clamp(6px,calc(var(--pad-size)*.038),9px);font-weight:750;color:#bedafa;margin-top:2px;white-space:nowrap}
+#dial .seg.tap{left:34%;top:35%;width:32%;height:30%;background:#245d9f;border:1px solid #91c8ff;z-index:1}
+#dial .seg.left{left:1%;top:36%;width:31%;height:29%}
+#dial .seg.right{right:1%;top:36%;width:31%;height:29%}
+#dial .seg.up{left:34%;top:2%;width:32%;height:28%}
+#dial .seg.down{left:34%;bottom:1%;width:32%;height:29%}
+#dial .seg.selected{background:#287fce;box-shadow:inset 0 0 0 1px #b1e1ff,0 0 12px #289aff55}
+#dial .seg.tap.selected{background:#287fce}
+#dial .seg.unavailable{display:none}
+#dial .cancel-label{position:absolute;bottom:1px;left:6%;width:88%;height:11%;display:flex;align-items:center;justify-content:center;font-size:clamp(7px,calc(var(--pad-size)*.053),11px);font-weight:900;letter-spacing:.025em;color:#ffb5bd;text-shadow:0 1px 4px #000a}
+#dial .mode-title{display:none;position:absolute;left:0;right:0;top:1px;text-align:center;color:#c2e1ff;font-size:clamp(7px,calc(var(--pad-size)*.05),10px);font-weight:850;letter-spacing:.045em;z-index:4}
+#dial.space-mode .mode-title,#dial.cursor-mode .mode-title{display:block}
+/* Cancel is entered ONLY by a DOWNWARD swipe beyond the invisible radial boundary. */
+#dial.cancelled .outer-zone{background:rgba(239,57,76,.43)}
+#dial.cancelled .ring{opacity:.38;border-color:#fa737e}
+#dial.cancelled .seg{opacity:.2;background:transparent;box-shadow:none}
+#dial.cancelled .cancel-label{color:#fff;background:#db3146;border-radius:5px}
+/* Space has no cancel mode. Its generous left-outside zone is red for DELETE. */
+#dial.space-mode .cancel-label{display:none}
+#dial.space-mode .seg.left .mini{font-size:clamp(6px,calc(var(--pad-size)*.037),9px)}
+#dial.space-mode .mode-title{top:0}
+#dial.delete-mode .outer-zone{background:linear-gradient(to right,rgba(232,55,80,.52),transparent 72%)}
+#dial.delete-mode .ring{border-color:#ff7288}
+#dial.delete-mode .seg.left.selected{background:#d33755;box-shadow:inset 0 0 0 1px #ffb6c0}
+#dial.cursor-mode .ring{border-color:#67e9d8;background:radial-gradient(circle,#164959,#102b43 85%)}
+#dial.cursor-mode .seg.tap{background:#236779;border-color:#7eeadf}
+#dial.cursor-mode .seg.selected{background:#168d9b}
+#dial.cursor-mode .seg.left .mini,#dial.cursor-mode .seg.right .mini{display:none}
+#dial.cursor-mode .cancel-label{display:none}
+#nextBtn{border:0;border-radius:14px;background:#367ee5;color:#fff;font-size:16px;font-weight:750;width:min(260px,100%);min-height:48px;cursor:pointer;box-shadow:0 7px 20px #0005}
+#nextBtn:active{background:#216ac5}
+#results{display:none;width:100%;background:#152440;border:1px solid var(--edge);padding:18px;border-radius:16px}
+#results h1{margin:0 0 10px;font-size:23px}
+#results .note{color:#b4c5df;font-size:12px;line-height:1.55}
+#results table{width:100%;margin:12px 0;border-collapse:collapse;font-size:13px}
+#results th,#results td{text-align:left;padding:9px 4px;border-bottom:1px solid #344765}
+#results th{color:#afcbed}
+#results .actions{display:flex;gap:8px;flex-wrap:wrap}
+#results button{border:0;border-radius:10px;min-height:43px;padding:0 13px;color:white;background:#3178cc;font-weight:700;cursor:pointer}
+#results button.secondary{background:#344b68}.hide{display:none!important}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="shell">
+  <section id="phrasePanel" class="phrase-panel">
+    <span class="field-label">Target phrase <span id="trialCounter"></span></span>
+    <div id="target" class="target"></div><div class="divider"></div>
+    <span class="field-label">Entered phrase</span>
+    <div id="entered" class="entered" aria-live="off"></div>
+  </section>
+  <div id="padWrap" class="pad-wrap">
+    <div id="pad" role="group" aria-label="StarFlick V3 calibrated 1 inch keyboard">
+      <div id="keyGrid">
+        <div class="key" data-chars="abcd">abcd</div><div class="key" data-chars="efg">efg</div><div class="key" data-chars="hij">hij</div>
+        <div class="key" data-chars="klm">klm</div><div class="key space-key" data-chars=" "><span>SPACE</span><span class="hint">← delete</span></div><div class="key" data-chars="nop">nop</div>
+        <div class="key" data-chars="qrs">qrs</div><div class="key" data-chars="tuv">tuv</div><div class="key" data-chars="wxyz">wxyz</div>
+      </div>
+      <div id="dial" aria-hidden="true">
+        <div class="outer-zone"></div>
+        <div id="modeTitle" class="mode-title"></div>
+        <div class="ring">
+          <div class="seg up" data-dir="up"><span class="letter"></span><span class="mini">UP</span></div>
+          <div class="seg down" data-dir="down"><span class="letter"></span><span class="mini">DOWN</span></div>
+          <div class="seg left" data-dir="left"><span class="letter"></span><span class="mini">LEFT</span></div>
+          <div class="seg tap" data-dir="tap"><span class="letter"></span><span class="mini">RELEASE</span></div>
+          <div class="seg right" data-dir="right"><span class="letter"></span><span class="mini">RIGHT</span></div>
+        </div>
+        <div id="cancelLabel" class="cancel-label">↓ OUTSIDE = CANCEL</div>
+      </div>
+    </div>
+  </div>
+  <button id="nextBtn" type="button">Next →</button>
+  <section id="results" aria-live="polite">
+    <h1>Prototype V3 results</h1>
+    <p class="note">Practice metrics only. Official grading and Scaffold comparisons require the instructor's test procedure.</p>
+    <table><thead><tr><th>Trial</th><th>WPM</th><th>Accuracy</th><th>Deletes</th></tr></thead><tbody id="resultRows"></tbody></table>
+    <div id="summary" class="note"></div>
+    <div class="actions" style="margin-top:14px"><button id="csvBtn" type="button">Download CSV</button><button id="restartBtn" class="secondary" type="button">Restart</button></div>
+  </section>
+</main>
+<script>
+(()=>{
+'use strict';
+// These are neutral demonstration phrases ONLY; no keyboard behavior refers to them.
+const PHRASES=['the world is a stage','do not squander your time','we can learn by testing ideas','hfgwmcwx'];
+const PAD_KEY='starflickPadPx';
+const els={
+ pad:document.getElementById('pad'),dial:document.getElementById('dial'),target:document.getElementById('target'),entered:document.getElementById('entered'),
+ next:document.getElementById('nextBtn'),counter:document.getElementById('trialCounter'),phrasePanel:document.getElementById('phrasePanel'),padWrap:document.getElementById('padWrap'),
+ results:document.getElementById('results'),rows:document.getElementById('resultRows'),summary:document.getElementById('summary'),csv:document.getElementById('csvBtn'),restart:document.getElementById('restartBtn'),
+ modeTitle:document.getElementById('modeTitle'),cancelLabel:document.getElementById('cancelLabel')
+};
+const choices=Object.fromEntries([...document.querySelectorAll('#dial .seg')].map(el=>[el.dataset.dir,el]));
+let trialIndex=0,text='',caret=0,startedAt=null,deleteCount=0,gestureCount=0,cancelCount=0,cursorOperations=0,records=[],active=null;
+const saved=(()=>{try{return Number(localStorage.getItem(PAD_KEY))}catch(_){return 145}})();
+document.documentElement.style.setProperty('--pad-size',`${Number.isFinite(saved)&&saved>=95&&saved<=240?saved:145}px`);
+function showEntered(){
+ // Text is never an editable native input: all input and editing gestures occur inside the pad.
+ els.entered.replaceChildren();
+ els.entered.append(document.createTextNode(text.slice(0,caret)));
+ const cursor=document.createElement('span');cursor.className='caret';cursor.setAttribute('aria-hidden','true');
+ els.entered.append(cursor,document.createTextNode(text.slice(caret)));
+}
+function resetTrial(){
+ if(active?.timer)clearTimeout(active.timer);active=null;els.dial.className='';
+ document.querySelectorAll('.key.pressing').forEach(el=>el.classList.remove('pressing'));
+ text='';caret=0;startedAt=null;deleteCount=0;gestureCount=0;cancelCount=0;cursorOperations=0;
+ els.target.textContent=PHRASES[trialIndex];showEntered();els.counter.textContent=`${trialIndex+1} / ${PHRASES.length}`;
+ els.phrasePanel.classList.remove('hide');els.padWrap.classList.remove('hide');els.next.classList.remove('hide');els.results.style.display='none';
+ els.next.textContent=trialIndex===PHRASES.length-1?'Finish →':'Next →';
+}
+/* Four-letter groups use a direction away from the crowded nearest edge:
+   ABCD (top-left): a tap / b left / c right / d DOWN.
+   WXYZ (bottom-right): w tap / x left / y UP / z right.
+   Three-letter groups: first tap / second left / third right. */
+function letterFor(chars,dir){
+ if(chars===' ')return dir==='tap'?' ':dir==='left'?'BACKSPACE':null;
+ if(dir==='tap')return chars[0]??null;
+ if(dir==='left')return chars[1]??null;
+ if(chars.length===3 && dir==='right')return chars[2]??null;
+ if(chars==='abcd' && dir==='right')return 'c';
+ if(chars==='abcd' && dir==='down')return 'd';
+ if(chars==='wxyz' && dir==='up')return 'y';
+ if(chars==='wxyz' && dir==='right')return 'z';
+ return null;
+}
+function placeVisualGuide(key){
+ const gridKeys=[...document.querySelectorAll('#keyGrid .key')];
+ const idx=gridKeys.indexOf(key),row=Math.floor(idx/3),col=idx%3;
+ // 67% diameter leaves a 33% travel lane, used to offset the preview away from finger.
+ const x=col===0?32:col===2?1:16.5;
+ const y=row===0?21:row===2?1:11;
+ els.dial.style.setProperty('--ring-x',`${x}%`);
+ els.dial.style.setProperty('--ring-y',`${y}%`);
+}
+function dialConfig(chars,key){
+ placeVisualGuide(key);
+ els.dial.className='visible'+(chars===' '?' space-mode':'');
+ els.modeTitle.textContent=chars===' '?'SPACE • HOLD TO MOVE':'DRAG FROM KEY';
+ els.cancelLabel.textContent=chars===' '?'':'↓ OUTSIDE = CANCEL';
+ for(const dir of ['tap','left','up','right','down']){
+   const option=choices[dir],v=letterFor(chars,dir),letter=option.querySelector('.letter'),mini=option.querySelector('.mini');
+   option.classList.toggle('unavailable',v===null);
+   option.classList.remove('selected');
+   letter.textContent=v==='BACKSPACE'?'⌫':v===' '?'␣':v??'';
+   mini.textContent=dir==='tap'?(chars===' '?'HOLD':'TAP'):dir==='left'?(chars===' '?'DELETE':'LEFT'):dir==='up'?'UP':dir==='down'?'DOWN':'RIGHT';
+ }
+ highlight('tap');
+}
+function highlight(dir){
+ els.dial.classList.toggle('cancelled',dir==='cancel');
+ els.dial.classList.toggle('delete-mode',active?.chars===' '&&active?.mode==='normal'&&dir==='left');
+ for(const [name,choice] of Object.entries(choices))choice.classList.toggle('selected',name===dir);
+}
+function padSide(){return els.pad.getBoundingClientRect().width;}
+function directionFor(a,clientX,clientY){
+ const dx=clientX-a.x,dy=clientY-a.y,d=Math.hypot(dx,dy),size=padSide();
+ const deadzone=Math.max(5,size*.048);          // generous tap zone; then broad wedge selection areas
+ const cancelRadius=Math.max(20,size*.158);   // outside radial circle, not merely down
+ const deleteDistance=Math.max(16,size*.12);  // larger left-delete hit region
+ if(a.chars===' '){
+   // Unlike letter groups, SPACE has NO cancel. Left-swipe outside the center activates delete.
+   return dx<=-deleteDistance && -dx>=Math.abs(dy)*.55?'left':'tap';
+ }
+ // Only a downward-and-outward motion can cancel. Up/left/right NEVER cancel.
+ const cancel=dy>0 && dy>=cancelRadius && d>=cancelRadius && dy>=Math.abs(dx)*.67;
+ if(cancel)return 'cancel';
+ if(d<deadzone)return 'tap';
+ if(a.chars==='abcd'){
+   // Upper-left ABCD: left/right/down are the displayed options; the DOWN sector
+   // stays active within the radial boundary, then becomes CANCEL outside it.
+   if(dy>deadzone && dy>Math.abs(dx)*.70)return 'down';
+   if(Math.abs(dx)<deadzone)return 'tap';
+   return dx<0?'left':'right';
+ }
+ if(a.chars==='wxyz'){
+   if(dy< -deadzone && -dy>Math.abs(dx)*.70)return 'up';
+   if(Math.abs(dx)<deadzone)return 'tap';
+   return dx<0?'left':'right';
+ }
+ // 3-letter groups: vertical movement alone stays on the center letter.
+ if(Math.abs(dx)<deadzone || Math.abs(dx)<Math.abs(dy)*.33)return 'tap';
+ return dx<0?'left':'right';
+}
+function startCursorMode(){
+ if(!active||active.chars!==' '||active.mode!=='normal'||active.dir!=='tap')return;
+ active.mode='cursor';active.cursorBase=caret;active.cursorAnchorX=active.x;
+ els.dial.classList.add('cursor-mode');els.modeTitle.textContent='MOVE CURSOR';els.cancelLabel.textContent='';
+ choices.left.classList.remove('unavailable');choices.left.querySelector('.letter').textContent='◀';choices.left.querySelector('.mini').textContent='EARLIER';
+ choices.right.classList.remove('unavailable');choices.right.querySelector('.letter').textContent='▶';choices.right.querySelector('.mini').textContent='LATER';
+ choices.up.classList.add('unavailable');choices.down.classList.add('unavailable');choices.tap.querySelector('.letter').textContent='┃';choices.tap.querySelector('.mini').textContent='MOVE';
+ highlight('tap');
+}
+function onDown(e){
+ if(active||!e.isPrimary||(e.pointerType==='mouse'&&e.button!==0))return;
+ const key=e.target.closest('.key');if(!key||!els.pad.contains(key))return;
+ e.preventDefault();
+ if(startedAt===null)startedAt=performance.now();
+ const a={id:e.pointerId,key,chars:key.dataset.chars,x:e.clientX,y:e.clientY,dir:'tap',mode:'normal',timer:null,cursorBase:caret,cursorAnchorX:e.clientX};
+ active=a;gestureCount++;key.classList.add('pressing');dialConfig(a.chars,key);
+ if(a.chars===' ')a.timer=setTimeout(()=>{if(active===a)startCursorMode();},540);
+ try{els.pad.setPointerCapture(e.pointerId)}catch(_){}
+}
+function onMove(e){
+ const a=active;if(!a||e.pointerId!==a.id)return;
+ e.preventDefault();
+ if(a.mode==='cursor'){
+   const step=Math.max(9,padSide()*.077);
+   const delta=Math.trunc((e.clientX-a.cursorAnchorX)/step);
+   caret=Math.max(0,Math.min(text.length,a.cursorBase+delta));
+   showEntered();highlight(delta<0?'left':delta>0?'right':'tap');return;
+ }
+ const rect=els.pad.getBoundingClientRect();
+ // Gestures must be resolved entirely INSIDE the 1-inch square, never from off-pad touches.
+ const x=Math.max(rect.left,Math.min(rect.right-1,e.clientX));
+ const y=Math.max(rect.top,Math.min(rect.bottom-1,e.clientY));
+ a.dir=directionFor(a,x,y);
+ if(a.timer && a.dir!=='tap'){clearTimeout(a.timer);a.timer=null;}
+ highlight(a.dir);
+}
+function finish(e,aborted=false){
+ const a=active;if(!a||e.pointerId!==a.id)return;
+ e.preventDefault();
+ if(!aborted)onMove(e);
+ if(a.timer)clearTimeout(a.timer);
+ if(aborted){cancelCount++;}
+ else if(a.mode==='cursor'){cursorOperations++;}
+ else if(a.dir==='cancel'){cancelCount++;}
+ else {
+   const value=letterFor(a.chars,a.dir);
+   if(value==='BACKSPACE'){
+     if(caret>0){text=text.slice(0,caret-1)+text.slice(caret);caret--;}
+     deleteCount++;
+   } else if(typeof value==='string'){
+     text=text.slice(0,caret)+value+text.slice(caret);caret++;
+   }else cancelCount++;
+ }
+ showEntered();a.key.classList.remove('pressing');els.dial.className='';
+ try{if(els.pad.hasPointerCapture(e.pointerId))els.pad.releasePointerCapture(e.pointerId)}catch(_){}
+ active=null;
+}
+els.pad.addEventListener('pointerdown',onDown);
+els.pad.addEventListener('pointermove',onMove);
+els.pad.addEventListener('pointerup',e=>finish(e));
+els.pad.addEventListener('pointercancel',e=>finish(e,true));
+els.pad.addEventListener('contextmenu',e=>e.preventDefault());
+els.pad.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
+function editDistance(a,b){
+ let prev=Array.from({length:b.length+1},(_,i)=>i);
+ for(let i=1;i<=a.length;i++){const curr=[i];for(let j=1;j<=b.length;j++)curr[j]=Math.min(curr[j-1]+1,prev[j]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));prev=curr;}
+ return prev[b.length];
+}
+function recordTrial(){
+ const timeSec=startedAt===null?0:(performance.now()-startedAt)/1000;
+ const distance=editDistance(PHRASES[trialIndex],text);
+ const accuracy=Math.max(0,100*(1-distance/Math.max(1,PHRASES[trialIndex].length,text.length)));
+ const wpm=timeSec>0?(text.length/5)/(timeSec/60):0;
+ records.push({trial:trialIndex+1,target:PHRASES[trialIndex],entered:text,time_sec:timeSec,wpm,accuracy,edit_distance:distance,deletes:deleteCount,gestures:gestureCount,cancels:cancelCount,cursor_moves:cursorOperations});
+}
+function showResults(){
+ els.phrasePanel.classList.add('hide');els.padWrap.classList.add('hide');els.next.classList.add('hide');els.results.style.display='block';
+ els.rows.innerHTML=records.map(r=>`<tr><td>${r.trial}</td><td>${r.wpm.toFixed(1)}</td><td>${r.accuracy.toFixed(1)}%</td><td>${r.deletes}</td></tr>`).join('');
+ const avg=k=>records.reduce((total,r)=>total+r[k],0)/Math.max(1,records.length);
+ els.summary.textContent=`Average: ${avg('wpm').toFixed(1)} WPM · ${avg('accuracy').toFixed(1)}% accuracy. WPM = entered chars ÷ 5 ÷ minutes. Accuracy = 1 − edit distance ÷ max(target length, entered length).`;
+}
+els.next.addEventListener('click',()=>{if(active)return;recordTrial();trialIndex++;if(trialIndex<PHRASES.length)resetTrial();else showResults();});
+els.restart.addEventListener('click',()=>{trialIndex=0;records=[];resetTrial();});
+els.csv.addEventListener('click',()=>{
+ const cols=['trial','target','entered','time_sec','wpm','accuracy','edit_distance','deletes','gestures','cancels','cursor_moves'];
+ const quote=value=>`"${String(value).replaceAll('"','""')}"`;
+ const body=[cols.join(','),...records.map(row=>cols.map(c=>quote(row[c])).join(','))].join('\r\n');
+ const url=URL.createObjectURL(new Blob(['\ufeff',body],{type:'text/csv;charset=utf-8'}));
+ const link=document.createElement('a');link.href=url;link.download='starflick_v3_trials.csv';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
+});
+resetTrial();
+})();
+</script>
+</body>
+</html>
