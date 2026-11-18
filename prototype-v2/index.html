@@ -81,6 +81,12 @@ body{background:radial-gradient(ellipse at 50% 0%,#203d54 0%,#0c1c31 55%,#07111e
 .results button.secondary{background:#36546e}
 .hidden-section{display:none!important}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* A START control is INSIDE the calibrated one-inch area, not extra external UI. */
+.start-screen{position:absolute;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:9px;text-align:center;border-radius:inherit;background:linear-gradient(155deg,#263c59,#102b43);color:#e9f6ff;touch-action:none;-webkit-user-select:none;user-select:none}
+.start-title{font-size:clamp(12px,calc(var(--pad-size)*.115),20px);font-weight:900;letter-spacing:.045em}
+.start-detail{font-size:clamp(7px,calc(var(--pad-size)*.058),10px);font-weight:650;line-height:1.4;color:#b3cfe5}
+#nextBtn:disabled{opacity:.47;pointer-events:none}
 </style>
 </head>
 <body>
@@ -114,18 +120,34 @@ body{background:radial-gradient(ellipse at 50% 0%,#203d54 0%,#0c1c31 55%,#07111e
   <button id="nextBtn" class="next" type="button">Next →</button>
   <section id="results" class="results" aria-live="polite">
     <h2>Prototype V2 results</h2>
-    <p class="note">Practice measurements only. Compare with the instructor's scaffold under equivalent test conditions.</p>
-    <table><thead><tr><th>Trial</th><th>WPM</th><th>Accuracy</th><th>Deletes</th></tr></thead><tbody id="resultRows"></tbody></table>
+    <p class="note">Official scaffold scoring appears below. Per-trial WPM is diagnostic only.</p>
+    <table><thead><tr><th>Trial</th><th>Trial WPM*</th><th>Accuracy</th><th>Deletes</th></tr></thead><tbody id="resultRows"></tbody></table>
     <p id="summary" class="note"></p>
     <div class="actions"><button id="csvBtn" type="button">Export CSV</button><button id="restartBtn" class="secondary" type="button">Restart</button></div>
   </section>
 </main>
+<script src="../official-bakeoff3-phrases.js"></script>
 <script>
 (()=>{
 'use strict';
 // The keyboard does NOT inspect, complete, suggest, highlight, or otherwise depend on the target phrase.
 const ROWS=['qwertyuiop','asdfghjkl','zxcvbnm'];
-const PHRASES=['the world is a stage','do not squander your time','we can learn by testing ideas','hfgwmcwx'];
+const DEMO_PHRASES=['the world is a stage','do not squander your time','we can learn by testing ideas','hfgwmcwx'];
+const TEST_PARAMS=new URLSearchParams(location.search);
+const DEMO_MODE=TEST_PARAMS.get('demo')==='1';
+const countParam=Number(TEST_PARAMS.get('trials'));
+const TRIAL_COUNT=Number.isInteger(countParam)&&countParam>=1&&countParam<=20?countParam:10;
+const officialPool=window.BAKEOFF3_OFFICIAL_PHRASES;
+if(!Array.isArray(officialPool)||officialPool.length!==473)throw Error('Official Bakeoff 3 HTML phrase pool missing.');
+const trialPool=(DEMO_MODE?DEMO_PHRASES:officialPool).slice();
+// Independent randomized trial order (optional ?seed=6 for matched cross-design tests).
+let rng=Math.random;
+if(TEST_PARAMS.has('seed')){
+ let state=(Number(TEST_PARAMS.get('seed'))>>>0)||1;
+ rng=()=>{state=(Math.imul(state,1664525)+1013904223)>>>0;return state/4294967296};
+}
+for(let n=trialPool.length-1;n>0;n--){const j=Math.floor(rng()*(n+1));[trialPool[n],trialPool[j]]=[trialPool[j],trialPool[n]]}
+const PHRASES=trialPool.slice(0,DEMO_MODE?Math.min(TRIAL_COUNT,4):TRIAL_COUNT);
 const STORE_KEY='starflickPadPx';
 const $=id=>document.getElementById(id);
 const els={pad:$('pad'),upper:$('upper'),lower:$('lower'),idle:$('idleControls'),mag:$('magnifier'),magLetters:$('magnifierLetters'),magLabel:$('magnifierLabel'),knob:$('knob'),target:$('target'),entered:$('entered'),counter:$('trialCount'),panel:$('phrasePanel'),wrap:$('padWrap'),next:$('nextBtn'),results:$('results'),rows:$('resultRows'),summary:$('summary'),csv:$('csvBtn'),restart:$('restartBtn')};
@@ -136,6 +158,7 @@ ROWS.forEach((s,ri)=>{for(let ci=0;ci<s.length;ci++){
  rows[ri].appendChild(key);keys[s[ci]]=key;
 }});
 let trial=0,typed='',caret=0,startedAt=null,deleteCount=0,gestureCount=0,cursorCount=0,records=[],active=null;
+let officialStartedAt=null,officialFinishedAt=null;
 let lastSelected=null;
 try{const raw=Number(localStorage.getItem(STORE_KEY));if(Number.isFinite(raw)&&raw>=95&&raw<=240)document.documentElement.style.setProperty('--pad-size',raw+'px')}catch(_){ }
 function drawEntered(){
@@ -243,6 +266,7 @@ function resetTrial(){
  active=null;trial=trial|0;typed='';caret=0;startedAt=null;deleteCount=0;gestureCount=0;cursorCount=0;
  els.target.textContent=PHRASES[trial];els.counter.textContent=`${trial+1} / ${PHRASES.length}`;drawEntered();clearMagnifier();
  els.panel.classList.remove('hidden-section');els.wrap.classList.remove('hidden-section');els.next.classList.remove('hidden-section');els.results.style.display='none';els.next.textContent=trial===PHRASES.length-1?'Finish →':'Next →';
+  startedAt=officialStartedAt;els.next.disabled=officialStartedAt===null;
 }
 function editDistance(a,b){let old=Array.from({length:b.length+1},(_,i)=>i);for(let i=1;i<=a.length;i++){const neu=[i];for(let j=1;j<=b.length;j++)neu[j]=Math.min(neu[j-1]+1,old[j]+1,old[j-1]+(a[i-1]===b[j-1]?0:1));old=neu}return old[b.length]}
 function saveTrial(){
@@ -256,14 +280,71 @@ function showResults(){
  const mean=k=>records.reduce((t,r)=>t+r[k],0)/Math.max(1,records.length);
  els.summary.textContent=`Average ${mean('wpm').toFixed(1)} WPM · ${mean('accuracy').toFixed(1)}% accuracy. WPM = entered characters / 5 / minutes. Accuracy = 1 − edit distance / max(lengths).`;
 }
-els.next.addEventListener('click',()=>{if(active)return;saveTrial();trial++;if(trial<PHRASES.length)resetTrial();else showResults()});
-els.restart.addEventListener('click',()=>{trial=0;records=[];resetTrial()});
+els.next.addEventListener('click',()=>{
+ if(active||officialStartedAt===null)return;
+ if(trial===PHRASES.length-1)officialFinishedAt=performance.now();
+ saveTrial();trial++;
+ if(trial<PHRASES.length)resetTrial();
+ else{showResults();showOfficialScore();}
+});
+els.restart.addEventListener('click',prepareSession);
 els.csv.addEventListener('click',()=>{
- const cols=['trial','target','entered','time_sec','wpm','accuracy','edit_distance','deletes','gestures','cursor_moves'];
+ const official=officialTotals();
+ for(const r of records)Object.assign(r,{official_total_ms:official.totalMs,official_raw_wpm:official.rawWpm,official_penalty:official.penalty,official_wpm:official.finalWpm,official_errors:official.errors,official_entered:official.lettersEntered,official_expected:official.lettersExpected,official_freebie_errors:official.freebieErrors});
+ const cols=['trial','target','entered','time_sec','wpm','accuracy','edit_distance','deletes','gestures','cursor_moves','official_total_ms','official_raw_wpm','official_penalty','official_wpm','official_errors','official_entered','official_expected','official_freebie_errors'];
  const quote=v=>'"'+String(v).replaceAll('"','""')+'"';const csv=[cols.join(','),...records.map(r=>cols.map(k=>quote(r[k])).join(','))].join('\r\n');
  const uri=URL.createObjectURL(new Blob(['\ufeff',csv],{type:'text/csv;charset=utf-8'}));const link=document.createElement('a');link.href=uri;link.download='magnified_qwerty_v2_trials.csv';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(uri),2000);
 });
-resetTrial();
+
+/* Official Bakeoff 3 HTML scaffold score, unchanged:
+   lettersEnteredTotal = sum(entered.length); lettersExpectedTotal = sum(target.length);
+   errorsTotal = sum(Levenshtein(entered.trim(),target.trim()));
+   rawWPM = (lettersEnteredTotal/5)/((finishTime-startTime)/60000);
+   freebieErrors = lettersExpectedTotal*0.05; penalty=max(errors-freebies,0)*0.5. */
+function officialTotals(){
+ const totalMs=Math.max(1,(officialFinishedAt??performance.now())-officialStartedAt);
+ let lettersEntered=0,lettersExpected=0,errors=0;
+ for(const r of records){
+  lettersEntered+=r.entered.length;
+  lettersExpected+=r.target.length;
+  errors+=editDistance(r.entered.trim(),r.target.trim());
+ }
+ const rawWpm=(lettersEntered/5)/(totalMs/60000);
+ const freebieErrors=lettersExpected*.05;
+ const penalty=Math.max(errors-freebieErrors,0)*.5;
+ return{totalMs,lettersEntered,lettersExpected,errors,rawWpm,freebieErrors,penalty,finalWpm:rawWpm-penalty};
+}
+function showOfficialScore(){
+ const z=officialTotals();
+ els.summary.style.whiteSpace='pre-line';
+ els.summary.textContent=
+  'OFFICIAL WPM (WITH PENALTY): '+z.finalWpm.toFixed(2)+'\n'+
+  'Raw WPM: '+z.rawWpm.toFixed(2)+' · Penalty: '+z.penalty.toFixed(2)+'\n'+
+  'Session time: '+(z.totalMs/1000).toFixed(1)+' sec · Entered / Expected: '+z.lettersEntered+' / '+z.lettersExpected+'\n'+
+  'Errors (trimmed Levenshtein): '+z.errors+' · 5% free allowance: '+z.freebieErrors.toFixed(2)+'\n'+
+  'Per-trial WPM above is diagnostic; only this continuous-session score matches the official HTML scaffold.';
+}
+const startOverlay=document.createElement('div');
+startOverlay.id='startOverlay';startOverlay.className='start-screen';
+startOverlay.innerHTML='<span class="start-title">TAP TO START</span><span class="start-detail">Official continuous timer<br>inside 1-inch area</span>';
+els.pad.appendChild(startOverlay);
+function beginSession(){
+ if(officialStartedAt!==null)return;
+ officialStartedAt=performance.now();officialFinishedAt=null;
+ startOverlay.style.display='none';
+ resetTrial();
+}
+startOverlay.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();beginSession()},{capture:true});
+startOverlay.addEventListener('pointerup',e=>{e.preventDefault();e.stopPropagation()},{capture:true});
+function prepareSession(){
+ trial=0;records=[];officialStartedAt=null;officialFinishedAt=null;
+ resetTrial();
+ els.target.textContent='Tap START inside the keyboard';
+ els.counter.textContent='0 / '+PHRASES.length;
+ els.next.disabled=true;
+ startOverlay.style.display='flex';
+}
+prepareSession();
 })();
 </script>
 </body>
