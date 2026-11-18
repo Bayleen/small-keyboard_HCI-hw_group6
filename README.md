@@ -1,37 +1,16 @@
-# StarFlick — HCI Bakeoff 2 (Group 6)
+# StarFlick — HCI Bakeoff 2, Group 6
 
-Two iterations of a proposed smartwatch text-entry interface, tested in a **1 × 1 inch** touch region using a phone or tablet.
+One repository, four independent text-entry prototypes.
 
-## Live demos (after enabling GitHub Pages)
+- `prototype-v1/` — original grouped-flick design.
+- `prototype-v2/` — revised radial gesture controls and cursor.
+- `prototype-v3/` — finger-aware offset guide and stricter cancel.
+- `prototype-v4/` — **Magnified QWERTY**, 26 miniature keys in the bottom half with large touch-driven selection preview in the top half, and delete/joystick/space controls when idle.
 
-- [Project landing page](https://bayleen.github.io/small-keyboard_HCI-hw_group6/)
-- [Prototype V1](https://bayleen.github.io/small-keyboard_HCI-hw_group6/prototype-v1/)
-- [Prototype V2](https://bayleen.github.io/small-keyboard_HCI-hw_group6/prototype-v2/)
+Each prototype has its own `index.html` and `calibrate.html`; open the calibration page in the same phone/browser to make sure the keyboard measures exactly **25.4 mm × 25.4 mm**.
 
-Each version has its own `calibrate.html` page. **Use it to calibrate the physical 1-inch input area before testing.**
+## Publish
+Upload the **contents** of this folder to the repository root; don't put this folder inside another directory. In GitHub → Settings → Pages, select main and `/(root)`.
 
-## Project layout
-
-```text
-index.html
-prototype-v1/index.html
-prototype-v1/calibrate.html
-prototype-v1/README.md
-prototype-v2/index.html
-prototype-v2/calibrate.html
-prototype-v2/README.md
-```
-
-## GitHub Pages setup
-
-In your repository, go to **Settings → Pages → Build and deployment**. Choose **Deploy from a branch**, select **main**, set folder to **/(root)**, and save. The landing page and both demos will be deployed together.
-
-## Important course constraints
-
-- All keyboard touch controls and graphical interaction feedback stay inside the physical **1 × 1 inch** input region.
-- Only `a`–`z` and space are entered; deletion and editing are optional controls.
-- The design should not depend on the target phrase; arbitrary letter sequences must remain possible.
-- Verify the interaction method with the instructor before using it for the bakeoff.
-- Compare typing speed (WPM) and accuracy against the provided scaffold using real participants. The repo itself is **not** evidence of a completed user study.
-
-This repository holds prototypes, not a completed final submission.
+## Notes
+The prototype does not predict target text and is not approved by the instructor. Formal bakeoff evaluation must use real users and compare against the scaffold baseline. CSV is exportable from each version.
