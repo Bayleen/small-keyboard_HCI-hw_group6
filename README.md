@@ -37,7 +37,7 @@ All four prototypes now use the **exact scoring equations from the uploaded offi
   - `penalty = Math.max(errorsTotal-freebieErrors, 0)*.5`
   - **`officialWPM = rawWPM - penalty`**
 - The per-trial WPM and accuracy figures remain diagnostic. Do **not** compare old per-trial-average screenshots with the official continuous-session WPM.
-- CSV export includes overall official metrics alongside each trial, for easy aggregation.
+- Results are displayed on the test page only. No CSV files are downloaded or saved, and test results are not archived in browser storage.
 
 **Matching tests across the two designs:** use the **same query parameters** for each version, e.g. `index.html?trials=10&seed=6` for the same randomized 10 official sentences in the same order. For quick checks use `?trials=2&seed=6`. `?demo=1` uses the earlier four demo strings including `hfgwmcwx`; it is **not** formal scoring data.
 

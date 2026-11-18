@@ -107,11 +107,10 @@ body{background:radial-gradient(circle at 50% 10%,#1d3457,#081223 66%);color:var
     <p class="note">Official scaffold scoring appears below. Per-trial WPM is diagnostic only.</p>
     <table><thead><tr><th>Trial</th><th>Trial WPM*</th><th>Accuracy</th><th>Deletes</th></tr></thead><tbody id="resultRows"></tbody></table>
     <div id="summary" class="note"></div>
-    <div class="actions" style="margin-top:14px"><button id="csvBtn" type="button">Download CSV</button><button id="restartBtn" class="secondary" type="button">Restart</button></div>
+    <div class="actions" style="margin-top:14px"><button id="restartBtn" class="secondary" type="button">Restart</button></div>
   </section>
 </main>
 <script src="../official-bakeoff3-phrases.js"></script>
-<script src="../team6-session-archive.js"></script>
 <script>
 (()=>{
 'use strict';
@@ -136,7 +135,7 @@ const PAD_KEY='starflickPadPx';
 const els={
  pad:document.getElementById('pad'),dial:document.getElementById('dial'),target:document.getElementById('target'),entered:document.getElementById('entered'),
  next:document.getElementById('nextBtn'),counter:document.getElementById('trialCounter'),phrasePanel:document.getElementById('phrasePanel'),padWrap:document.getElementById('padWrap'),
- results:document.getElementById('results'),rows:document.getElementById('resultRows'),summary:document.getElementById('summary'),csv:document.getElementById('csvBtn'),restart:document.getElementById('restartBtn'),
+ results:document.getElementById('results'),rows:document.getElementById('resultRows'),summary:document.getElementById('summary'),restart:document.getElementById('restartBtn'),
  modeTitle:document.getElementById('modeTitle'),cancelLabel:document.getElementById('cancelLabel')
 };
 const choices=Object.fromEntries([...document.querySelectorAll('#dial .seg')].map(el=>[el.dataset.dir,el]));
@@ -287,16 +286,9 @@ els.next.addEventListener('click',()=>{
  if(trialIndex===PHRASES.length-1)officialFinishedAt=performance.now();
  recordTrial();trialIndex++;
  if(trialIndex<PHRASES.length)resetTrial();
- else{
-  showResults();showOfficialScore();
-  const archived=window.Team6SessionArchive.recordCompleted({
-   records,official:officialTotals(),expectedTrials:PHRASES.length,demo:DEMO_MODE
-  });
-  els.summary.textContent+=archived.message;
- }
+ else{showResults();showOfficialScore();}
 });
 els.restart.addEventListener('click',prepareSession);
-// All CSV exports are managed by the session archive (no duplicate downloads).
 
 /* Official Bakeoff 3 HTML scaffold score, unchanged:
    lettersEnteredTotal = sum(entered.length); lettersExpectedTotal = sum(target.length);
@@ -346,7 +338,6 @@ function prepareSession(){
  els.next.disabled=true;
  startOverlay.style.display='flex';
 }
-window.Team6SessionArchive.setupControls(els.csv);
 prepareSession();
 })();
 </script>

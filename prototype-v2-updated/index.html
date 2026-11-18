@@ -128,11 +128,10 @@ body{background:radial-gradient(ellipse at 50% 0%,#203d54 0%,#0c1c31 55%,#07111e
     <p class="note">Official scaffold scoring appears below. Per-trial WPM is diagnostic only.</p>
     <table><thead><tr><th>Trial</th><th>Trial WPM*</th><th>Accuracy</th><th>Deletes</th></tr></thead><tbody id="resultRows"></tbody></table>
     <p id="summary" class="note"></p>
-    <div class="actions"><button id="csvBtn" type="button">Export CSV</button><button id="restartBtn" class="secondary" type="button">Restart</button></div>
+    <div class="actions"><button id="restartBtn" class="secondary" type="button">Restart</button></div>
   </section>
 </main>
 <script src="../official-bakeoff3-phrases.js"></script>
-<script src="../team6-session-archive.js"></script>
 <script>
 (()=>{
 'use strict';
@@ -156,7 +155,7 @@ for(let n=trialPool.length-1;n>0;n--){const j=Math.floor(rng()*(n+1));[trialPool
 const PHRASES=trialPool.slice(0,DEMO_MODE?Math.min(TRIAL_COUNT,4):TRIAL_COUNT);
 const STORE_KEY='starflickPadPx';
 const $=id=>document.getElementById(id);
-const els={pad:$('pad'),upper:$('upper'),lower:$('lower'),idle:$('idleControls'),mag:$('magnifier'),magLetters:$('magnifierLetters'),magLabel:$('magnifierLabel'),knob:$('knob'),target:$('target'),entered:$('entered'),counter:$('trialCount'),panel:$('phrasePanel'),wrap:$('padWrap'),next:$('nextBtn'),results:$('results'),rows:$('resultRows'),summary:$('summary'),csv:$('csvBtn'),restart:$('restartBtn')};
+const els={pad:$('pad'),upper:$('upper'),lower:$('lower'),idle:$('idleControls'),mag:$('magnifier'),magLetters:$('magnifierLetters'),magLabel:$('magnifierLabel'),knob:$('knob'),target:$('target'),entered:$('entered'),counter:$('trialCount'),panel:$('phrasePanel'),wrap:$('padWrap'),next:$('nextBtn'),results:$('results'),rows:$('resultRows'),summary:$('summary'),restart:$('restartBtn')};
 const rows=[...document.querySelectorAll('.letter-row')];
 const keys={};
 ROWS.forEach((s,ri)=>{for(let ci=0;ci<s.length;ci++){
@@ -317,16 +316,9 @@ els.next.addEventListener('click',()=>{
  if(trial===PHRASES.length-1)officialFinishedAt=performance.now();
  saveTrial();trial++;
  if(trial<PHRASES.length)resetTrial();
- else{
-  showResults();showOfficialScore();
-  const archived=window.Team6SessionArchive.recordCompleted({
-   records,official:officialTotals(),expectedTrials:PHRASES.length,demo:DEMO_MODE
-  });
-  els.summary.textContent+=archived.message;
- }
+ else{showResults();showOfficialScore();}
 });
 els.restart.addEventListener('click',prepareSession);
-// All CSV exports are managed by the session archive (no duplicate downloads).
 // iPhone test mode: stop accidental browser zoom without changing keyboard geometry.
 // iOS Safari versions can differ in their handling of touch-action: manipulation.
 // The keyboard handles gestures itself (touch-action:none); avoid intercepting
@@ -398,7 +390,6 @@ function prepareSession(){
  els.next.disabled=true;
  startOverlay.style.display='flex';
 }
-window.Team6SessionArchive.setupControls(els.csv);
 prepareSession();
 })();
 </script>
