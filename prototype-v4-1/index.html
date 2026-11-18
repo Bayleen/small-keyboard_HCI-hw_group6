@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#07111e">
+<title>StarFlick V4.1 — Stable Magnified QWERTY</title>
+<style>
+:root{--pad-size:145px;--bg:#07111e;--text:#eef7ff;--muted:#a5b5c9;--edge:#314863;--cyan:#75e9f1}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;-webkit-text-size-adjust:100%;touch-action:manipulation}
+body{background:radial-gradient(ellipse at 50% 0%,#203d54 0%,#0c1c31 55%,#07111e 100%);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.shell{margin:0 auto;max-width:460px;min-height:100svh;padding:24px 16px 48px;display:flex;flex-direction:column;align-items:center;gap:17px}
+.header{width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.brand{font-size:13px;letter-spacing:.11em;font-weight:900;color:#c8faff}
+.version{font-size:11px;color:#a7b9d1;background:#1c344b;border:1px solid #365775;border-radius:20px;padding:5px 9px}
+.panel{width:100%;border-radius:17px;padding:15px 17px;background:rgba(20,38,60,.95);border:1px solid var(--edge)}
+.label{display:block;color:#a7b9d1;font-size:11px;letter-spacing:.10em;text-transform:uppercase;font-weight:800;margin-bottom:8px}
+.target{font-size:20px;font-weight:650;line-height:1.35;min-height:28px;overflow-wrap:anywhere}
+.separator{height:1px;background:#334963;margin:13px 0}
+.entered{font-size:19px;font-weight:650;color:#9be9ff;line-height:1.4;min-height:49px;overflow-wrap:anywhere;white-space:pre-wrap;user-select:none;-webkit-user-select:none}
+.caret{display:inline-block;vertical-align:-.16em;width:2px;height:1.04em;background:#74f8e9;animation:blink 1s steps(1,end) infinite}
+@keyframes blink{50%{opacity:.1}}
+.device{width:100%;display:flex;align-items:center;justify-content:center;padding:10px 0 8px}
+/* The *entire* interactive keyboard, magnifier, and joystick occupy exactly the calibrated 1x1 inch square. */
+.pad{width:var(--pad-size);height:var(--pad-size);flex:0 0 var(--pad-size);position:relative;display:flex;flex-direction:column;overflow:hidden;border:2px solid #7395ac;border-radius:15px;background:#0c1b2b;box-shadow:0 16px 32px #0008,inset 0 1px #fff2;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none;-webkit-tap-highlight-color:transparent}
+/* Top 50%: idle controls; while typing, a magnifying inspection window. */
+.upper{height:50%;width:100%;position:relative;flex:0 0 50%;overflow:hidden;border-bottom:2px solid #375c74;background:linear-gradient(170deg,#142b43,#0d2135)}
+.idle-controls{position:absolute;inset:0;display:flex;align-items:stretch;justify-content:space-between;transition:opacity .08s ease}
+.idle-controls.hidden{opacity:0;pointer-events:none}
+.tool{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:#bfd5eb;line-height:1;text-align:center;min-width:0;touch-action:none}
+.tool .symbol{font-size:clamp(13px,calc(var(--pad-size)*.133),26px);font-weight:800}
+.tool .tool-name{font-size:clamp(6px,calc(var(--pad-size)*.044),9px);font-weight:850;letter-spacing:.035em}
+.tool.delete{width:29%;border-right:1px solid #3a5268;background:#233449;color:#ffa6b0}
+.tool.space{gap:7px;width:29%;position:relative;isolation:isolate;overflow:hidden;border-left:1px solid #ffc3e8;background:linear-gradient(145deg,#ffd0ee 0%,#ff82ca 45%,#f550aa 100%);color:#571036;box-shadow:inset 0 1px 0 #fff9,inset 0 -2px 7px #9f267039,0 0 10px #ff74c277;transition:background .15s,filter .12s,box-shadow .16s}
+.tool.space .symbol{font-size:clamp(24px,calc(var(--pad-size)*.21),38px);line-height:1;color:#581238;text-shadow:0 1px 0 #fff9;font-weight:950}
+.tool.space .tool-name{color:#581238;font-size:clamp(7px,calc(var(--pad-size)*.058),11px);letter-spacing:.025em}
+.tool.space .symbol,.tool.space .tool-name{position:relative;z-index:1}
+.tool.space::after{content:'';position:absolute;z-index:0;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 50%,#ffffffed 0%,#ffe0f3b3 30%,#ffffff00 75%);opacity:0}
+.tool.space.space-pop::after{animation:spaceFlash .4s ease-out both}
+.tool.space.space-pop .symbol{animation:spaceBounce .4s cubic-bezier(.2,.85,.35,1.2)}
+@keyframes spaceFlash{0%{opacity:.95;transform:scale(.3)}100%{opacity:0;transform:scale(2)}}
+@keyframes spaceBounce{0%{transform:scale(.85)}50%{transform:scale(1.25)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.tool.space.space-pop::after,.tool.space.space-pop .symbol{animation:none}}
+.tool.cursor{flex:1;background:#152b41}
+.stick-ring{width:clamp(27px,calc(var(--pad-size)*.285),53px);height:clamp(27px,calc(var(--pad-size)*.285),53px);border-radius:50%;border:1.5px solid #6598b2;background:radial-gradient(circle,#21445f,#14273d);display:grid;place-items:center;position:relative;box-shadow:inset 0 0 5px #0008}
+.stick-ring::before,.stick-ring::after{content:'‹';position:absolute;left:3px;color:#8db5c8;font-size:12px;top:50%;transform:translateY(-56%)}
+.stick-ring::after{content:'›';left:auto;right:3px}
+.stick-knob{position:relative;z-index:1;width:38%;height:38%;border-radius:50%;background:linear-gradient(140deg,#85fff3,#1f9bb4);box-shadow:0 0 0 2px #11263d,0 0 12px #48ddd66b;transform:translateX(var(--knob-shift,0px));transition:transform .04s linear}
+.tool.is-pressed{filter:brightness(1.4)}
+.tool.delete.is-pressed{background:#ab3348;color:#fff}
+.tool.space.is-pressed{background:linear-gradient(140deg,#ffe8f7,#ff9fda);color:#571036;box-shadow:inset 0 0 0 2px #ffffffb8,0 0 13px #ff95d2a8;filter:brightness(1.06)}
+.tool.cursor.is-pressed{background:#1a4550}
+.magnifier{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;gap:3px;padding:4px 2px 3px;background:radial-gradient(ellipse at 50% 44%,#224c66,#0b2235 78%);pointer-events:none}
+.magnifier.visible{display:flex}
+.mag-label{height:12%;display:flex;align-items:center;justify-content:center;white-space:nowrap;color:#b8d9e6;font-size:clamp(6px,calc(var(--pad-size)*.046),9px);font-weight:850;letter-spacing:.045em}
+.mag-letters{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;min-height:0;flex:1;align-items:stretch}
+.mag-letter{border:1px solid #2e5570;background:#183349;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:clamp(11px,calc(var(--pad-size)*.10),19px);font-weight:800;color:#799aac;min-width:0}
+.mag-letter.near{color:#cae8f1;background:#25455c}
+.mag-letter.selected{font-size:clamp(14px,calc(var(--pad-size)*.124),22px);color:#061e2b;background:#89dce5;border:1px solid #afeff0;box-shadow:inset 0 0 0 1px #ffffff4d}
+.mag-footer{height:14%;text-align:center;color:#a8dbe3;font-size:clamp(6px,calc(var(--pad-size)*.045),9px);font-weight:750;line-height:1.05}
+/* Bottom 50%: three tiny QWERTY rows only. */
+.lower{flex:1;min-height:0;width:100%;display:flex;flex-direction:column;justify-content:center;gap:2px;padding:3px 2px 4px;background:linear-gradient(165deg,#12263c,#0c1d30)}
+.letter-row{height:calc((100% - 4px)/3);min-height:0;display:flex;align-items:stretch;justify-content:center;gap:1px}
+.tiny-key{flex:1;min-width:0;border:1px solid #355b72;background:linear-gradient(170deg,#2a435b,#182e45);border-radius:3px;display:flex;align-items:center;justify-content:center;color:#e5f5ff;font-size:clamp(7px,calc(var(--pad-size)*.067),13px);font-weight:800;line-height:1;touch-action:none;letter-spacing:-.03em;padding:0}
+.letter-row[data-row="1"]{width:91%;align-self:center}
+.letter-row[data-row="2"]{width:75%;align-self:center}
+.tiny-key.anchor-left{color:#e3fff0;background:linear-gradient(160deg,#397c60,#214d46);border-color:#68b894}
+.tiny-key.anchor-right{color:#e5f4ff;background:linear-gradient(160deg,#3973a4,#234964);border-color:#75a4d6}
+.tiny-key.active{color:#072431;background:#8bdde5;border-color:#b0f2ef;box-shadow:inset 0 0 0 1px #ffffff5c;z-index:2}
+.lower.is-dragging{background:#0e2d40}
+.small-help{color:#a6bcd4;font-size:12px;line-height:1.55;max-width:310px;text-align:center}
+.next{border:0;border-radius:12px;width:min(270px,100%);min-height:48px;background:#3f8de8;color:white;font-size:16px;font-weight:800;cursor:pointer;box-shadow:0 7px 17px #0005}
+.next:active{filter:brightness(1.2)}
+.next,.panel,.results button{touch-action:manipulation}
+.results{display:none;width:100%;background:#172b43;border:1px solid #3b566a;padding:17px;border-radius:14px}
+.results h2{font-size:21px;margin:0 0 10px}
+.results .note{color:#b2c6d9;font-size:12px;line-height:1.5}
+.results table{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}
+.results th,.results td{text-align:left;padding:8px 4px;border-bottom:1px solid #36526a}
+.results th{color:#bdd6e9}
+.results .actions{display:flex;gap:9px;margin-top:16px}
+.results button{border:0;border-radius:9px;background:#2d86db;color:#fff;padding:12px;font-weight:800;cursor:pointer}
+.results button.secondary{background:#36546e}
+.hidden-section{display:none!important}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="shell">
+  <section id="phrasePanel" class="panel">
+    <span class="label">Target phrase <span id="trialCount"></span></span>
+    <div id="target" class="target"></div><div class="separator"></div>
+    <span class="label">Entered phrase</span><div id="entered" class="entered" aria-live="off"></div>
+  </section>
+  <section id="padWrap" class="device" aria-label="Calibrated 1 by 1 inch touch area">
+    <div id="pad" class="pad" role="group" aria-label="Prototype 4.1 stable magnified QWERTY keyboard">
+      <div id="upper" class="upper">
+        <div id="idleControls" class="idle-controls">
+          <div class="tool delete" data-action="delete"><span class="symbol">⌫</span><span class="tool-name">DEL</span></div>
+          <div class="tool cursor" data-action="cursor"><div class="stick-ring"><div id="knob" class="stick-knob"></div></div><span class="tool-name">CURSOR</span></div>
+          <div class="tool space" data-action="space"><span class="symbol">␣</span><span class="tool-name">SPACE</span></div>
+        </div>
+        <div id="magnifier" class="magnifier" aria-hidden="true">
+          <div id="magnifierLabel" class="mag-label">MAGNIFIED SELECTION</div>
+          <div id="magnifierLetters" class="mag-letters"></div>
+          <div class="mag-footer">DRAG TO ADJUST · RELEASE TO TYPE</div>
+        </div>
+      </div>
+      <div id="lower" class="lower">
+        <div class="letter-row" data-row="0"></div>
+        <div class="letter-row" data-row="1"></div>
+        <div class="letter-row" data-row="2"></div>
+      </div>
+    </div>
+  </section>
+  <button id="nextBtn" class="next" type="button">Next →</button>
+  <section id="results" class="results" aria-live="polite">
+    <h2>Prototype V4.1 results</h2>
+    <p class="note">Practice measurements only. Compare with the instructor's scaffold under equivalent test conditions.</p>
+    <table><thead><tr><th>Trial</th><th>WPM</th><th>Accuracy</th><th>Deletes</th></tr></thead><tbody id="resultRows"></tbody></table>
+    <p id="summary" class="note"></p>
+    <div class="actions"><button id="csvBtn" type="button">Export CSV</button><button id="restartBtn" class="secondary" type="button">Restart</button></div>
+  </section>
+</main>
+<script>
+(()=>{
+'use strict';
+// The keyboard does NOT inspect, complete, suggest, highlight, or otherwise depend on the target phrase.
+const ROWS=['qwertyuiop','asdfghjkl','zxcvbnm'];
+const PHRASES=['the world is a stage','do not squander your time','we can learn by testing ideas','hfgwmcwx'];
+const STORE_KEY='starflickPadPx';
+const $=id=>document.getElementById(id);
+const els={pad:$('pad'),upper:$('upper'),lower:$('lower'),idle:$('idleControls'),mag:$('magnifier'),magLetters:$('magnifierLetters'),magLabel:$('magnifierLabel'),knob:$('knob'),target:$('target'),entered:$('entered'),counter:$('trialCount'),panel:$('phrasePanel'),wrap:$('padWrap'),next:$('nextBtn'),results:$('results'),rows:$('resultRows'),summary:$('summary'),csv:$('csvBtn'),restart:$('restartBtn')};
+const rows=[...document.querySelectorAll('.letter-row')];
+const keys={};
+ROWS.forEach((s,ri)=>{for(let ci=0;ci<s.length;ci++){
+ const key=document.createElement('div');key.className='tiny-key'+(s[ci]==='f'?' anchor-left':s[ci]==='j'?' anchor-right':'');key.textContent=s[ci];key.dataset.letter=s[ci];key.dataset.row=ri;key.dataset.col=ci;
+ rows[ri].appendChild(key);keys[s[ci]]=key;
+}});
+let trial=0,typed='',caret=0,startedAt=null,deleteCount=0,gestureCount=0,cursorCount=0,records=[],active=null;
+let lastSelected=null,previewRow=-1,previewStart=-1;
+try{const raw=Number(localStorage.getItem(STORE_KEY));if(Number.isFinite(raw)&&raw>=95&&raw<=240)document.documentElement.style.setProperty('--pad-size',raw+'px')}catch(_){ }
+function drawEntered(){
+ els.entered.replaceChildren(document.createTextNode(typed.slice(0,caret)));
+ const c=document.createElement('span');c.className='caret';c.setAttribute('aria-hidden','true');
+ els.entered.append(c,document.createTextNode(typed.slice(caret)));
+}
+function insertChar(ch){typed=typed.slice(0,caret)+ch+typed.slice(caret);caret++;drawEntered()}
+function erase(){if(caret>0){typed=typed.slice(0,caret-1)+typed.slice(caret);caret--;deleteCount++;drawEntered()}}
+function setActiveKey(ch){if(lastSelected===ch)return;if(lastSelected)keys[lastSelected]?.classList.remove('active');lastSelected=ch;if(ch)keys[ch]?.classList.add('active')}
+function setMagnifier(row,col){
+ const s=ROWS[row],ch=s[col],windowSize=5;
+ setActiveKey(ch);
+ els.magLabel.textContent=`ROW ${row+1} · ${ch.toUpperCase()} SELECTED`;
+ // Keep the five-letter viewport stationary while the selected key stays in view.
+ // A single DOM rebuild occurs only when a row changes or the selected key leaves the window.
+ let rebuild=previewRow!==row;
+ if(rebuild){previewRow=row;previewStart=Math.max(0,Math.min(s.length-windowSize,col-2))}
+ else if(col<previewStart){previewStart=col;rebuild=true}
+ else if(col>=previewStart+windowSize){previewStart=col-windowSize+1;rebuild=true}
+ if(rebuild){
+  const fragment=document.createDocumentFragment();
+  for(let i=0;i<windowSize;i++){
+   const item=document.createElement('div');
+   item.className='mag-letter';item.textContent=s[previewStart+i];
+   fragment.appendChild(item);
+  }
+  els.magLetters.replaceChildren(fragment);
+ }
+ for(let i=0;i<windowSize;i++){
+  const item=els.magLetters.children[i],offset=Math.abs(previewStart+i-col);
+  item.classList.toggle('selected',offset===0);
+  item.classList.toggle('near',offset===1);
+ }
+}
+function showMagnifier(){els.idle.classList.add('hidden');els.mag.classList.add('visible');els.lower.classList.add('is-dragging')}
+function clearMagnifier(){els.mag.classList.remove('visible');els.idle.classList.remove('hidden');els.lower.classList.remove('is-dragging');setActiveKey(null);previewRow=-1;previewStart=-1}
+function rectCenter(el){const r=el.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}}
+function closestKeyInRow(row,x){let best=0,d=Infinity;for(let i=0;i<ROWS[row].length;i++){const c=rectCenter(keys[ROWS[row][i]]);const v=Math.abs(x-c.x);if(v<d){best=i;d=v}}return best}
+function nearestKey(x,y){
+ const centers=rows.map(rectCenter);let row=0,dist=Infinity;
+ for(let i=0;i<centers.length;i++){const d=Math.abs(y-centers[i].y);if(d<dist){row=i;dist=d}}
+ return {row,col:closestKeyInRow(row,x)};
+}
+function insidePad(x,y){const r=els.pad.getBoundingClientRect();return x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom}
+function moveSelection(a,x,y){
+ const pad=els.pad.getBoundingClientRect();
+ // This is a precision touchpad: a physical finger movement maps to 65% of that distance.
+ // It gives deliberate control over tiny letters while the large preview remains unobstructed.
+ const gain=.65;
+ const relativeX=a.centerX+(x-a.startX)*gain;
+ const relativeY=a.centerY+(y-a.startY)*gain;
+ let row=a.startRow, min=Infinity;
+ for(let i=0;i<3;i++){const cy=rectCenter(rows[i]).y,delta=Math.abs(relativeY-cy);if(delta<min){min=delta;row=i}}
+ const col=closestKeyInRow(row,relativeX);
+ if(a.row!==row||a.col!==col){a.row=row;a.col=col;setMagnifier(row,col)}
+ a.outside=!insidePad(x,y);
+}
+function animateSpaceTap(tool){
+ if(!tool)return;
+ tool.classList.remove('space-pop');
+ void tool.offsetWidth;
+ tool.classList.add('space-pop');
+}
+document.querySelector('.tool.space').addEventListener('animationend',e=>{
+ if(e.animationName==='spaceFlash')e.currentTarget.classList.remove('space-pop');
+});
+function startGesture(e){
+ if(active||!e.isPrimary||(e.pointerType==='mouse'&&e.button!==0))return;
+ if(!els.pad.contains(e.target))return;
+ const pad=els.pad.getBoundingClientRect();
+ if(!insidePad(e.clientX,e.clientY))return;
+ e.preventDefault();if(startedAt===null)startedAt=performance.now();
+ let a={id:e.pointerId,kind:'',startX:e.clientX,startY:e.clientY,outside:false};
+ if(e.clientY>=els.lower.getBoundingClientRect().top){
+  const n=nearestKey(e.clientX,e.clientY);a.kind='letter';a.startRow=n.row;a.startCol=n.col;a.row=n.row;a.col=n.col;
+  const center=rectCenter(keys[ROWS[n.row][n.col]]);a.centerX=center.x;a.centerY=center.y;
+  showMagnifier();setMagnifier(a.row,a.col);
+ } else {
+  const tool=e.target.closest('[data-action]');
+  if(!tool)return;
+  a.kind=tool.dataset.action;a.tool=tool;tool.classList.add('is-pressed');
+  if(a.kind==='cursor'){a.startCaret=caret;els.knob.style.setProperty('--knob-shift','0px')}
+ }
+ active=a;gestureCount++;
+ try{els.pad.setPointerCapture(e.pointerId)}catch(_){ }
+}
+function updateGesture(e){
+ const a=active;if(!a||a.id!==e.pointerId)return;e.preventDefault();
+ a.outside=!insidePad(e.clientX,e.clientY);
+ if(a.kind==='letter'){moveSelection(a,e.clientX,e.clientY);return}
+ if(a.kind==='cursor'){
+  // Horizontal displacement drives the insertion caret, not a new character.
+  const unit=Math.max(7,els.pad.getBoundingClientRect().width*.067);
+  const steps=Math.trunc((e.clientX-a.startX)/unit);
+  caret=Math.max(0,Math.min(typed.length,a.startCaret+steps));drawEntered();
+  const shift=Math.max(-12,Math.min(12,(e.clientX-a.startX)*.37));els.knob.style.setProperty('--knob-shift',shift+'px');
+ }
+}
+function endGesture(e,cancelled=false){
+ const a=active;if(!a||a.id!==e.pointerId)return;e.preventDefault();
+ if(!cancelled)updateGesture(e);
+ if(!cancelled&&!a.outside){
+  if(a.kind==='letter')insertChar(ROWS[a.row][a.col]);
+  else if(a.kind==='delete')erase();
+  else if(a.kind==='space'){insertChar(' ');animateSpaceTap(a.tool)}
+  else if(a.kind==='cursor')cursorCount++;
+ } else if(a.kind==='cursor'){caret=a.startCaret;drawEntered()}
+ a.tool?.classList.remove('is-pressed');els.knob.style.setProperty('--knob-shift','0px');clearMagnifier();
+ try{if(els.pad.hasPointerCapture(e.pointerId))els.pad.releasePointerCapture(e.pointerId)}catch(_){ }
+ active=null;
+}
+els.pad.addEventListener('pointerdown',startGesture);
+els.pad.addEventListener('pointermove',updateGesture);
+els.pad.addEventListener('pointerup',e=>endGesture(e));
+els.pad.addEventListener('pointercancel',e=>endGesture(e,true));
+els.pad.addEventListener('contextmenu',e=>e.preventDefault());
+els.pad.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
+function resetTrial(){
+ active=null;trial=trial|0;typed='';caret=0;startedAt=null;deleteCount=0;gestureCount=0;cursorCount=0;
+ els.target.textContent=PHRASES[trial];els.counter.textContent=`${trial+1} / ${PHRASES.length}`;drawEntered();clearMagnifier();
+ els.panel.classList.remove('hidden-section');els.wrap.classList.remove('hidden-section');els.next.classList.remove('hidden-section');els.results.style.display='none';els.next.textContent=trial===PHRASES.length-1?'Finish →':'Next →';
+}
+function editDistance(a,b){let old=Array.from({length:b.length+1},(_,i)=>i);for(let i=1;i<=a.length;i++){const neu=[i];for(let j=1;j<=b.length;j++)neu[j]=Math.min(neu[j-1]+1,old[j]+1,old[j-1]+(a[i-1]===b[j-1]?0:1));old=neu}return old[b.length]}
+function saveTrial(){
+ const elapsed=startedAt===null?0:(performance.now()-startedAt)/1000;
+ const target=PHRASES[trial],distance=editDistance(target,typed),accuracy=Math.max(0,100*(1-distance/Math.max(1,target.length,typed.length)));
+ records.push({trial:trial+1,target,entered:typed,time_sec:elapsed,wpm:elapsed>0?(typed.length/5)/(elapsed/60):0,accuracy,edit_distance:distance,deletes:deleteCount,gestures:gestureCount,cursor_moves:cursorCount});
+}
+function showResults(){
+ els.panel.classList.add('hidden-section');els.wrap.classList.add('hidden-section');els.next.classList.add('hidden-section');els.results.style.display='block';
+ els.rows.replaceChildren();for(const r of records){const tr=document.createElement('tr');for(const val of [r.trial,r.wpm.toFixed(1),r.accuracy.toFixed(1)+'%',r.deletes]){const td=document.createElement('td');td.textContent=val;tr.appendChild(td)}els.rows.appendChild(tr)}
+ const mean=k=>records.reduce((t,r)=>t+r[k],0)/Math.max(1,records.length);
+ els.summary.textContent=`Average ${mean('wpm').toFixed(1)} WPM · ${mean('accuracy').toFixed(1)}% accuracy. WPM = entered characters / 5 / minutes. Accuracy = 1 − edit distance / max(lengths).`;
+}
+els.next.addEventListener('click',()=>{if(active)return;saveTrial();trial++;if(trial<PHRASES.length)resetTrial();else showResults()});
+els.restart.addEventListener('click',()=>{trial=0;records=[];resetTrial()});
+els.csv.addEventListener('click',()=>{
+ const cols=['trial','target','entered','time_sec','wpm','accuracy','edit_distance','deletes','gestures','cursor_moves'];
+ const quote=v=>'"'+String(v).replaceAll('"','""')+'"';const csv=[cols.join(','),...records.map(r=>cols.map(k=>quote(r[k])).join(','))].join('\r\n');
+ const uri=URL.createObjectURL(new Blob(['\ufeff',csv],{type:'text/csv;charset=utf-8'}));const link=document.createElement('a');link.href=uri;link.download='starflick_v4_1_trials.csv';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(uri),2000);
+});
+// iPhone test mode: stop accidental browser zoom without changing keyboard geometry.
+document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
+document.addEventListener('gesturechange',e=>e.preventDefault(),{passive:false});
+document.addEventListener('touchstart',e=>{if(e.touches.length>1)e.preventDefault()},{passive:false});
+document.addEventListener('touchmove',e=>{if(e.touches.length>1)e.preventDefault()},{passive:false});
+resetTrial();
+})();
+</script>
+</body>
+</html>
