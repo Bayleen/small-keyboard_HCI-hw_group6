@@ -123,6 +123,7 @@ body{background:radial-gradient(circle at 50% 10%,#1d3457,#081223 66%);color:var
   </section>
 </main>
 <script src="../official-bakeoff3-phrases.js"></script>
+<script src="../team6-session-archive.js"></script>
 <script>
 (()=>{
 'use strict';
@@ -330,18 +331,16 @@ els.next.addEventListener('click',()=>{
  if(trialIndex===PHRASES.length-1)officialFinishedAt=performance.now();
  recordTrial();trialIndex++;
  if(trialIndex<PHRASES.length)resetTrial();
- else{showResults();showOfficialScore();}
+ else{
+  showResults();showOfficialScore();
+  const archived=window.Team6SessionArchive.recordCompleted({
+   records,official:officialTotals(),expectedTrials:PHRASES.length,demo:DEMO_MODE
+  });
+  els.summary.textContent+=archived.message;
+ }
 });
 els.restart.addEventListener('click',prepareSession);
-els.csv.addEventListener('click',()=>{
- const official=officialTotals();
- for(const r of records)Object.assign(r,{official_total_ms:official.totalMs,official_raw_wpm:official.rawWpm,official_penalty:official.penalty,official_wpm:official.finalWpm,official_errors:official.errors,official_entered:official.lettersEntered,official_expected:official.lettersExpected,official_freebie_errors:official.freebieErrors});
- const cols=['trial','target','entered','time_sec','wpm','accuracy','edit_distance','deletes','gestures','cancels','cursor_moves','official_total_ms','official_raw_wpm','official_penalty','official_wpm','official_errors','official_entered','official_expected','official_freebie_errors'];
- const quote=value=>`"${String(value).replaceAll('"','""')}"`;
- const body=[cols.join(','),...records.map(row=>cols.map(c=>quote(row[c])).join(','))].join('\r\n');
- const url=URL.createObjectURL(new Blob(['\ufeff',body],{type:'text/csv;charset=utf-8'}));
- const link=document.createElement('a');link.href=url;link.download='starflick_v1_updated_trials.csv';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
-});
+// All CSV exports are managed by the session archive (no duplicate downloads).
 
 /* Official Bakeoff 3 HTML scaffold score, unchanged:
    lettersEnteredTotal = sum(entered.length); lettersExpectedTotal = sum(target.length);
@@ -391,6 +390,7 @@ function prepareSession(){
  els.next.disabled=true;
  startOverlay.style.display='flex';
 }
+window.Team6SessionArchive.setupControls(els.csv);
 prepareSession();
 })();
 </script>
