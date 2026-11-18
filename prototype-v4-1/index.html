@@ -8,20 +8,20 @@
 <style>
 :root{--pad-size:145px;--bg:#07111e;--text:#eef7ff;--muted:#a5b5c9;--edge:#314863;--cyan:#75e9f1}
 *{box-sizing:border-box}
-html,body{margin:0;min-height:100%;-webkit-text-size-adjust:100%;touch-action:manipulation}
+html,body{margin:0;min-height:100%;-webkit-text-size-adjust:100%;touch-action:manipulation;-webkit-user-select:none;user-select:none}
 body{background:radial-gradient(ellipse at 50% 0%,#203d54 0%,#0c1c31 55%,#07111e 100%);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 .shell{margin:0 auto;max-width:460px;min-height:100svh;padding:24px 16px 48px;display:flex;flex-direction:column;align-items:center;gap:17px}
 .header{width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px}
 .brand{font-size:13px;letter-spacing:.11em;font-weight:900;color:#c8faff}
 .version{font-size:11px;color:#a7b9d1;background:#1c344b;border:1px solid #365775;border-radius:20px;padding:5px 9px}
-.panel{width:100%;border-radius:17px;padding:15px 17px;background:rgba(20,38,60,.95);border:1px solid var(--edge)}
+.panel{width:100%;border-radius:17px;padding:15px 17px;background:rgba(20,38,60,.95);border:1px solid var(--edge);touch-action:none;-webkit-touch-callout:none}
 .label{display:block;color:#a7b9d1;font-size:11px;letter-spacing:.10em;text-transform:uppercase;font-weight:800;margin-bottom:8px}
 .target{font-size:20px;font-weight:650;line-height:1.35;min-height:28px;overflow-wrap:anywhere}
 .separator{height:1px;background:#334963;margin:13px 0}
 .entered{font-size:19px;font-weight:650;color:#9be9ff;line-height:1.4;min-height:49px;overflow-wrap:anywhere;white-space:pre-wrap;user-select:none;-webkit-user-select:none}
 .caret{display:inline-block;vertical-align:-.16em;width:2px;height:1.04em;background:#74f8e9;animation:blink 1s steps(1,end) infinite}
 @keyframes blink{50%{opacity:.1}}
-.device{width:100%;display:flex;align-items:center;justify-content:center;padding:10px 0 8px}
+.device{width:100%;display:flex;align-items:center;justify-content:center;padding:10px 0 8px;touch-action:none}
 /* The *entire* interactive keyboard, magnifier, and joystick occupy exactly the calibrated 1x1 inch square. */
 .pad{width:var(--pad-size);height:var(--pad-size);flex:0 0 var(--pad-size);position:relative;display:flex;flex-direction:column;overflow:hidden;border:2px solid #7395ac;border-radius:15px;background:#0c1b2b;box-shadow:0 16px 32px #0008,inset 0 1px #fff2;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none;-webkit-tap-highlight-color:transparent}
 /* Top 50%: idle controls; while typing, a magnifying inspection window. */
@@ -282,6 +282,23 @@ els.csv.addEventListener('click',()=>{
  const uri=URL.createObjectURL(new Blob(['\ufeff',csv],{type:'text/csv;charset=utf-8'}));const link=document.createElement('a');link.href=uri;link.download='starflick_v4_1_trials.csv';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(uri),2000);
 });
 // iPhone test mode: stop accidental browser zoom without changing keyboard geometry.
+// iOS Safari versions can differ in their handling of touch-action: manipulation.
+// The keyboard handles gestures itself (touch-action:none); avoid intercepting
+// its touchend events so fast typing and drag-to-select remain unaffected.
+// For surrounding text and Next, suppress only a *second* nearby quick tap.
+let lastPageTap=null;
+document.addEventListener('touchend', e=>{
+ if(e.touches.length!==0 || e.changedTouches.length!==1)return;
+ if(e.target instanceof Element && e.target.closest('#pad')){lastPageTap=null;return;}
+ const finger=e.changedTouches[0], now=performance.now();
+ if(lastPageTap && now-lastPageTap.time<360 &&
+    Math.hypot(finger.clientX-lastPageTap.x,finger.clientY-lastPageTap.y)<32){
+   e.preventDefault();lastPageTap=null;return;
+ }
+ lastPageTap={time:now,x:finger.clientX,y:finger.clientY};
+},{passive:false,capture:true});
+// Also block Safari's synthetic dblclick zoom on the outer page.
+document.addEventListener('dblclick', e=>e.preventDefault(), {capture:true});
 document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
 document.addEventListener('gesturechange',e=>e.preventDefault(),{passive:false});
 document.addEventListener('touchstart',e=>{if(e.touches.length>1)e.preventDefault()},{passive:false});
