@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>StarFlick V2 — Pre-test Calibration</title>
+<title>Magnified QWERTY V2 — Pre-test Calibration</title>
 <style>
 *{box-sizing:border-box}body{margin:0;padding:24px 18px;background:#0c162a;color:#eaf2ff;font:16px -apple-system,BlinkMacSystemFont,Arial,sans-serif}main{max-width:410px;margin:0 auto}h1{font-size:24px}p{color:#aec0dd;line-height:1.6}.ruler{display:flex;justify-content:center;align-items:center;min-height:285px;background:#152643;border:1px solid #355377;border-radius:18px}.square{width:145px;height:145px;border:3px solid #8acaff;background:#25548b;display:grid;place-items:center;font-weight:700;text-align:center;font-size:15px}input[type=range]{width:100%;accent-color:#76b8ff}button{border:0;border-radius:12px;background:#3687e9;color:#fff;padding:13px 18px;font-weight:700;font-size:16px;width:100%;cursor:pointer}.value{font-weight:700;color:#86c3ff}.note{margin-top:22px;font-size:13px;color:#b7c9df}
 </style></head><body><main>
@@ -11,6 +11,7 @@
 <p>Screen-space size: <span class="value" id="value"></span> CSS pixels (not a physical measurement)</p>
 <input type="range" min="95" max="240" step="1" value="145" id="range" aria-label="Adjust physical square size">
 <p>Adjust the slider until measured width and height are 25.4 mm. Then press Save and start.</p>
+<p><strong>V2 controls:</strong> In the lower half, press a tiny QWERTY letter, slide to adjust selection while reading the enlarged preview above, and release to type. In the upper half while idle: left = Delete, center = drag joystick left/right to move the insertion cursor, right = Space.</p>
 <button id="save">Save size &amp; start StarFlick →</button>
 <p class="note">Do the calibration on the exact phone/tablet and zoom level used during testing. Keep Safari page zoom at 100% and avoid changing browser scaling afterward. The actual keyboard never adds any controls outside the calibrated 1-inch pad except Target / Entered / Next.</p>
 </main><script>

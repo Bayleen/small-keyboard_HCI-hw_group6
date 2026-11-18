@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#081223">
-<title>StarFlick V3 — Smartwatch Keyboard</title>
+<title>StarFlick V1 Updated — Refined Flick — Smartwatch Keyboard</title>
 <style>
 :root{--pad-size:145px;--fg:#ebf3ff;--muted:#a6bad8;--edge:#324966;--bg:#081223;--accent:#71beff}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%}
@@ -87,7 +87,7 @@ body{background:radial-gradient(circle at 50% 10%,#1d3457,#081223 66%);color:var
     <div id="entered" class="entered" aria-live="off"></div>
   </section>
   <div id="padWrap" class="pad-wrap">
-    <div id="pad" role="group" aria-label="StarFlick V3 calibrated 1 inch keyboard">
+    <div id="pad" role="group" aria-label="StarFlick V1 Updated — Refined Flick calibrated 1 inch keyboard">
       <div id="keyGrid">
         <div class="key" data-chars="abcd">abcd</div><div class="key" data-chars="efg">efg</div><div class="key" data-chars="hij">hij</div>
         <div class="key" data-chars="klm">klm</div><div class="key space-key" data-chars=" "><span>SPACE</span><span class="hint">← delete</span></div><div class="key" data-chars="nop">nop</div>
@@ -109,7 +109,7 @@ body{background:radial-gradient(circle at 50% 10%,#1d3457,#081223 66%);color:var
   </div>
   <button id="nextBtn" type="button">Next →</button>
   <section id="results" aria-live="polite">
-    <h1>Prototype V3 results</h1>
+    <h1>Prototype V1 Updated results</h1>
     <p class="note">Practice metrics only. Official grading and Scaffold comparisons require the instructor's test procedure.</p>
     <table><thead><tr><th>Trial</th><th>WPM</th><th>Accuracy</th><th>Deletes</th></tr></thead><tbody id="resultRows"></tbody></table>
     <div id="summary" class="note"></div>
@@ -308,7 +308,7 @@ els.csv.addEventListener('click',()=>{
  const quote=value=>`"${String(value).replaceAll('"','""')}"`;
  const body=[cols.join(','),...records.map(row=>cols.map(c=>quote(row[c])).join(','))].join('\r\n');
  const url=URL.createObjectURL(new Blob(['\ufeff',body],{type:'text/csv;charset=utf-8'}));
- const link=document.createElement('a');link.href=url;link.download='starflick_v3_trials.csv';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
+ const link=document.createElement('a');link.href=url;link.download='starflick_v1_updated_trials.csv';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
 });
 resetTrial();
 })();
