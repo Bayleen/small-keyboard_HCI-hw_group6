@@ -14,10 +14,11 @@
 <p><strong>V2 controls:</strong> In the lower half, press a tiny QWERTY letter, slide to adjust selection while reading the enlarged preview above, and release to type. In the upper half while idle: left = Delete, center = drag joystick left/right to move the insertion cursor, right = Space.</p>
 <button id="save">Save size &amp; start StarFlick →</button>
 <p class="note">Do the calibration on the exact phone/tablet and zoom level used during testing. Keep Safari page zoom at 100% and avoid changing browser scaling afterward. The actual keyboard never adds any controls outside the calibrated 1-inch pad except Target / Entered / Next.</p>
+<p class="note">After calibration, tap START within the 1-inch keyboard. The official scaffold timer runs continuously until the last NEXT. Default test: 10 randomized official phrases; use ?trials=2 for a quick check, and the same ?seed=6 across prototypes for matched phrase comparisons.</p>
 </main><script>
 const r=document.getElementById('range'),square=document.getElementById('square'),v=document.getElementById('value');
 const saved=Number(localStorage.getItem('starflickPadPx'));if(Number.isFinite(saved)&&saved>=95&&saved<=240)r.value=saved;
 function render(){square.style.width=r.value+'px';square.style.height=r.value+'px';v.textContent=r.value}
 r.addEventListener('input',render);render();
-document.getElementById('save').addEventListener('click',()=>{localStorage.setItem('starflickPadPx',r.value);location.href='index.html';});
+document.getElementById('save').addEventListener('click',()=>{localStorage.setItem('starflickPadPx',r.value);location.href='index.html'+location.search;});
 </script></body></html>
