@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a1223">
+  <title>StarFlick V1 — Smartwatch Keyboard</title>
+  <style>
+    :root { --pad-size: 145px; --fg: #e9f0ff; --muted: #a3b2d0; --edge: #354767; --blue: #5aa5ff; --bg: #0a1223; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body { background: radial-gradient(circle at 50% 12%, #1b3155, var(--bg) 65%); color: var(--fg); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .shell { max-width: 470px; margin: 0 auto; padding: 24px 18px 40px; display: flex; flex-direction: column; align-items: center; gap: 18px; }
+    .phrase-panel { width: 100%; border-radius: 17px; padding: 16px 18px; background: #162340; border: 1px solid var(--edge); }
+    .phrase-panel .field-label { display: block; color: #a2b4d5; font-size: 12px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; margin-bottom: 7px; }
+    .phrase-panel .target, .phrase-panel .entered { font-size: 20px; font-weight: 620; overflow-wrap: anywhere; min-height: 28px; line-height: 1.35; letter-spacing: .01em; }
+    .phrase-panel .entered { color: #95d8ff; min-height: 56px; font-size: 19px; font-weight: 550; white-space: pre-wrap; }
+    .phrase-panel .entered:empty::before { content: 'Type with StarFlick…'; font-weight: 450; font-size: 15px; color: #7285a8; }
+    .phrase-panel .entered::after { content:'▍'; color: #5aa5ff; opacity:.9; }
+    .phrase-panel .divider { height: 1px; background: #334662; margin: 13px 0; }
+    .pad-wrap { display: flex; justify-content: center; width: 100%; padding: 14px 0 8px; }
+    /* The input pad is the ONLY touch/graphics region during an active trial.
+       SIZE MUST BE PHYSICALLY CALIBRATED TO 25.4 mm; see calibrate.html. */
+    #pad { position: relative; width: var(--pad-size); height: var(--pad-size); flex-shrink: 0; border-radius: 18px; overflow: hidden; border: 2px solid #7891b3; background:#101c32; user-select: none; -webkit-user-select:none; -webkit-touch-callout:none; touch-action:none; -webkit-tap-highlight-color:transparent; box-shadow: 0 18px 36px #0007, inset 0 0 0 1px #233a5c; }
+    #keyGrid { position:absolute; inset: 5px; display:grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 4px; }
+    .key { min-width: 0; min-height:0; border:1px solid #4a6285; border-radius:8px; background:linear-gradient(155deg, #324764, #20324c); color:#e6f1ff; font-weight:800; font-size: clamp(9px, calc(var(--pad-size) * .072), 15px); letter-spacing:-.055em; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; padding: 1px; }
+    .key .hint { font-size: clamp(7px, calc(var(--pad-size) * .053), 11px); letter-spacing:0; font-weight:650; color:#acd1ff; }
+    .key.space-key { background: linear-gradient(150deg,#337fe4,#1b4ea8); border-color:#7eb4ff; letter-spacing:0; font-size: clamp(8px, calc(var(--pad-size) * .065), 12px); }
+    .key.pressing { background:#385d8e; }
+    #dial { display:none; position:absolute; inset: 0; z-index:5; background:rgba(9, 19, 38, .96); pointer-events:none; }
+    #dial.visible { display:block; }
+    .ring { position:absolute; left:5%; top:5%; width:90%; height:90%; border-radius:50%; background: radial-gradient(circle at 50% 46%, #2a456b 0%, #172941 70%); border:2px solid #85b7fb; box-shadow: 0 0 0 2px #1b345c, inset 0 0 20px #0007; }
+    .ring .dial-heading { position:absolute; top:7%; left:5%; width:90%; text-align:center; color:#9ebde1; font-size: clamp(8px, calc(var(--pad-size) * .058), 12px); font-weight:800; white-space:nowrap; }
+    .choice { position:absolute; min-width:20%; height:23%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0; color:#fff; font-weight:800; line-height:1; border-radius: 13px; }
+    .choice .char { font-size: clamp(13px, calc(var(--pad-size) * .135), 24px); }
+    .choice .gesture { margin-top:3px; font-size: clamp(7px, calc(var(--pad-size) * .055), 11px); color:#b1c8eb; font-weight:700; letter-spacing: 0; }
+    .choice.tap { left:33%; top:38%; width:34%; height:25%; background: #225495; border: 1px solid #7dbeff; }
+    .choice.right { right:2%; top:39%; }
+    .choice.down { left:37%; bottom:2%; width:26%; }
+    .choice.left { left:2%; top:39%; }
+    .choice.cancel { left:36%; top:23%; width:28%; height:15%; }
+    .choice.cancel .char { color:#7694b9; font-size:clamp(9px, calc(var(--pad-size) * .062), 12px); }
+    .choice.selected { background: #3177c7; box-shadow:0 0 0 2px #8aceff; }
+    .choice.invalid { opacity:.30; }
+    .choice.invalid.selected { background:#9a3652; opacity:1; }
+    .arrow { color:#8db9ea; font-size: clamp(9px, calc(var(--pad-size) * .072), 13px); }
+    #nextBtn { border: 0; border-radius: 14px; background: #3689ed; color:white; font-size:16px; font-weight:750; width:min(260px,100%); min-height: 48px; cursor:pointer; box-shadow:0 7px 20px #0005; }
+    #nextBtn:active { background: #1e6dc8; }
+    #results { display:none; width:100%; background: #152440; border:1px solid var(--edge); padding:18px; border-radius:16px; }
+    #results h1 { margin: 0 0 10px; font-size:23px; }
+    #results .note { color:#a6b6d3; font-size:12px; line-height:1.5; }
+    #results table { width:100%; margin:12px 0; border-collapse:collapse; font-size:13px; }
+    #results th,#results td { text-align:left; padding:9px 4px; border-bottom:1px solid #344765; }
+    #results th { color:#a2bfe5; }
+    #results .actions { display:flex; gap:8px; flex-wrap:wrap; }
+    #results button { border:none; border-radius:10px; min-height:43px; padding:0 13px; color:white; background:#3178cc; font-weight:700; cursor:pointer; }
+    #results button.secondary { background:#32455f; }
+    .hide { display:none!important; }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section id="phrasePanel" class="phrase-panel">
+      <span class="field-label">Target phrase <span id="trialCounter"></span></span>
+      <div id="target" class="target"></div>
+      <div class="divider"></div>
+      <span class="field-label">Entered phrase</span>
+      <div id="entered" class="entered" aria-live="polite"></div>
+    </section>
+
+    <div id="padWrap" class="pad-wrap">
+      <div id="pad" role="group" aria-label="StarFlick 1 inch text input pad">
+        <div id="keyGrid">
+          <div class="key" data-chars="abcd">abcd</div>
+          <div class="key" data-chars="efg">efg</div>
+          <div class="key" data-chars="hij">hij</div>
+          <div class="key" data-chars="klm">klm</div>
+          <div class="key space-key" data-chars=" "><span>SPACE</span><span class="hint">← DEL</span></div>
+          <div class="key" data-chars="nop">nop</div>
+          <div class="key" data-chars="qrs">qrs</div>
+          <div class="key" data-chars="tuv">tuv</div>
+          <div class="key" data-chars="wxyz">wxyz</div>
+        </div>
+        <div id="dial" aria-hidden="true">
+          <div class="ring">
+            <div id="dialHeading" class="dial-heading">abcd</div>
+            <div class="choice cancel" data-dir="cancel"><span class="char">↑ cancel</span></div>
+            <div class="choice tap" data-dir="tap"><span class="char">a</span><span class="gesture">TAP</span></div>
+            <div class="choice right" data-dir="right"><span class="arrow">→</span><span class="char">b</span></div>
+            <div class="choice down" data-dir="down"><span class="char">c</span><span class="arrow">↓</span></div>
+            <div class="choice left" data-dir="left"><span class="arrow">←</span><span class="char">d</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button id="nextBtn" type="button">Next →</button>
+    <section id="results" aria-live="polite">
+      <h1>Practice results</h1>
+      <p class="note">These are V1 practice metrics, not official Scaffold scores. Compare with the supplied Scaffold using the same test procedure.</p>
+      <table><thead><tr><th>Trial</th><th>WPM</th><th>Accuracy</th><th>Deletes</th></tr></thead><tbody id="resultRows"></tbody></table>
+      <div id="summary" class="note"></div>
+      <div class="actions" style="margin-top:14px"><button id="csvBtn" type="button">Download CSV</button><button id="restartBtn" class="secondary" type="button">Restart</button></div>
+    </section>
+  </main>
+<script>
+(() => {
+  'use strict';
+  // You may edit the phrase list. Never use phrase content to alter the keyboard.
+  const PHRASES = [
+    'the world is a stage',
+    'do not squander your time',
+    'we can learn by testing ideas',
+    'hfgwmcwx'
+  ];
+  const DIR_INDEX = {tap:0, right:1, down:2, left:3};
+  const els = {
+    pad:document.getElementById('pad'), dial:document.getElementById('dial'),
+    target:document.getElementById('target'), entered:document.getElementById('entered'),
+    next:document.getElementById('nextBtn'), trialCounter:document.getElementById('trialCounter'),
+    phrasePanel:document.getElementById('phrasePanel'), padWrap:document.getElementById('padWrap'),
+    results:document.getElementById('results'), rows:document.getElementById('resultRows'),
+    summary:document.getElementById('summary'), csv:document.getElementById('csvBtn'),
+    restart:document.getElementById('restartBtn'), heading:document.getElementById('dialHeading')
+  };
+  const choices = Object.fromEntries([...document.querySelectorAll('.choice')].map(el => [el.dataset.dir, el]));
+  let index = 0, text = '', startedAt = null, deleteCount = 0, gestureCount = 0, invalidCount = 0;
+  let active = null, records = [];
+
+  function getPadSize(){
+    const stored = Number(localStorage.getItem('starflickPadPx'));
+    return Number.isFinite(stored) && stored>=95 && stored<=240 ? stored : 145;
+  }
+  document.documentElement.style.setProperty('--pad-size', `${getPadSize()}px`);
+
+  function renderTrial() {
+    active = null; els.dial.classList.remove('visible');
+    document.querySelectorAll('.key.pressing').forEach(k => k.classList.remove('pressing'));
+    text = ''; startedAt = null; deleteCount = 0; gestureCount = 0; invalidCount = 0;
+    els.target.textContent = PHRASES[index]; els.entered.textContent = text;
+    els.trialCounter.textContent = `${index + 1} / ${PHRASES.length}`;
+    els.phrasePanel.classList.remove('hide'); els.padWrap.classList.remove('hide');
+    els.next.classList.remove('hide'); els.results.style.display = 'none';
+    els.next.textContent = index === PHRASES.length - 1 ? 'Finish →' : 'Next →';
+  }
+  function charFor(chars,dir) {
+    if (chars === ' ') return dir==='tap' ? ' ' : dir==='left' ? 'BACKSPACE' : null;
+    if (!(dir in DIR_INDEX)) return null;
+    return chars[DIR_INDEX[dir]] ?? null;
+  }
+  function configureDial(chars) {
+    els.heading.textContent = chars === ' ' ? 'SPACE / DELETE' : chars.toUpperCase();
+    for (const dir of ['tap','right','down','left']) {
+      const el=choices[dir], c=charFor(chars,dir);
+      const label=el.querySelector('.char');
+      label.textContent = c === 'BACKSPACE' ? '⌫' : c === ' ' ? '␣' : c ?? '×';
+      el.classList.toggle('invalid',c === null);
+      el.classList.remove('selected');
+    }
+    choices.cancel.classList.remove('selected');
+  }
+  function getDirection(dx,dy,threshold) {
+    if(Math.hypot(dx,dy)<threshold) return 'tap';
+    if(Math.abs(dx)>Math.abs(dy)*1.08) return dx>0?'right':'left';
+    if(Math.abs(dy)>Math.abs(dx)*1.08) return dy>0?'down':'cancel';
+    return Math.abs(dx)>=Math.abs(dy) ? (dx>0?'right':'left') : (dy>0?'down':'cancel');
+  }
+  function highlight(dir) {
+    for(const [name,el] of Object.entries(choices)) el.classList.toggle('selected',name===dir);
+  }
+  function onDown(e) {
+    if(active || !e.isPrimary || (e.pointerType==='mouse' && e.button!==0)) return;
+    const key=e.target.closest('.key');
+    if(!key || !els.pad.contains(key)) return;
+    e.preventDefault();
+    if(startedAt===null) startedAt=performance.now();
+    active={id:e.pointerId, key, chars:key.dataset.chars, x:e.clientX, y:e.clientY, dir:'tap'};
+    gestureCount += 1;
+    key.classList.add('pressing');
+    configureDial(active.chars);
+    highlight('tap'); els.dial.classList.add('visible');
+    try { els.pad.setPointerCapture(e.pointerId); } catch (_) { /* fallback */ }
+  }
+  function onMove(e) {
+    if(!active || e.pointerId!==active.id) return;
+    e.preventDefault();
+    const size=els.pad.getBoundingClientRect().width;
+    active.dir=getDirection(e.clientX-active.x,e.clientY-active.y,Math.max(10,size*.095));
+    highlight(active.dir);
+  }
+  function finishGesture(e, cancelled=false) {
+    if(!active || e.pointerId!==active.id) return;
+    e.preventDefault();
+    if(!cancelled) onMove(e);
+    const picked=cancelled ? null : charFor(active.chars,active.dir);
+    if(picked === 'BACKSPACE') { text = text.slice(0,-1); deleteCount += 1; }
+    else if(typeof picked === 'string') { text += picked; }
+    else if(!cancelled && active.dir!=='cancel') { invalidCount += 1; }
+    els.entered.textContent=text;
+    active.key.classList.remove('pressing');
+    els.dial.classList.remove('visible');
+    try { if(els.pad.hasPointerCapture(e.pointerId)) els.pad.releasePointerCapture(e.pointerId); } catch (_) {}
+    active=null;
+  }
+  els.pad.addEventListener('pointerdown',onDown);
+  els.pad.addEventListener('pointermove',onMove);
+  els.pad.addEventListener('pointerup',e=>finishGesture(e));
+  els.pad.addEventListener('pointercancel',e=>finishGesture(e,true));
+  els.pad.addEventListener('contextmenu',e=>e.preventDefault());
+  // Prevent iOS's default viewport movement when touching inside the pad.
+  els.pad.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
+
+  function editDistance(a,b) {
+    let previous=Array.from({length:b.length+1},(_,i)=>i);
+    for(let i=1;i<=a.length;i++){
+      const current=[i];
+      for(let j=1;j<=b.length;j++) current[j]=Math.min(current[j-1]+1,previous[j]+1,previous[j-1]+(a[i-1]===b[j-1]?0:1));
+      previous=current;
+    }
+    return previous[b.length];
+  }
+  function recordTrial(){
+    const elapsedMs=startedAt===null?0:performance.now()-startedAt;
+    const durationMin=elapsedMs/60000;
+    const dist=editDistance(PHRASES[index],text);
+    const accuracy=Math.max(0,100*(1-dist/Math.max(1,PHRASES[index].length,text.length)));
+    const wpm=durationMin>0 ? (text.length/5)/durationMin : 0;
+    records.push({trial:index+1,target:PHRASES[index],entered:text,time_sec:elapsedMs/1000,wpm,accuracy,edit_distance:dist,deletes:deleteCount,gestures:gestureCount,invalid_gestures:invalidCount});
+  }
+  function esc(s){return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');}
+  function showResults(){
+    els.phrasePanel.classList.add('hide');els.padWrap.classList.add('hide');els.next.classList.add('hide');
+    els.results.style.display='block';
+    els.rows.innerHTML=records.map(r=>`<tr><td>${r.trial}</td><td>${r.wpm.toFixed(1)}</td><td>${r.accuracy.toFixed(1)}%</td><td>${r.deletes}</td></tr>`).join('');
+    const avg=key=>records.reduce((s,r)=>s+r[key],0)/Math.max(1,records.length);
+    els.summary.textContent=`Average: ${avg('wpm').toFixed(1)} WPM · ${avg('accuracy').toFixed(1)}% accuracy. WPM = entered characters / 5 / minutes; accuracy = 1 − Levenshtein distance / max(target length, entered length).`;
+  }
+  els.next.addEventListener('click',()=>{
+    if(active) return;
+    recordTrial(); index++;
+    if(index<PHRASES.length) renderTrial(); else showResults();
+  });
+  els.restart.addEventListener('click',()=>{index=0;records=[];renderTrial();});
+  els.csv.addEventListener('click',()=>{
+    const cols=['trial','target','entered','time_sec','wpm','accuracy','edit_distance','deletes','gestures','invalid_gestures'];
+    const quote=v=>`"${String(v).replaceAll('"','""')}"`;
+    const body=[cols.join(','),...records.map(r=>cols.map(c=>quote(r[c])).join(','))].join('\r\n');
+    const url=URL.createObjectURL(new Blob(['\ufeff',body],{type:'text/csv;charset=utf-8'}));
+    const link=document.createElement('a');link.href=url;link.download='starflick_v1_trials.csv';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  });
+  renderTrial();
+})();
+</script>
+</body>
+</html>
