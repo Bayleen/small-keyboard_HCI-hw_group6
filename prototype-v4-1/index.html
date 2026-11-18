@@ -16,6 +16,8 @@ body{background:radial-gradient(ellipse at 50% 0%,#203d54 0%,#0c1c31 55%,#07111e
 .version{font-size:11px;color:#a7b9d1;background:#1c344b;border:1px solid #365775;border-radius:20px;padding:5px 9px}
 .panel{width:100%;border-radius:17px;padding:15px 17px;background:rgba(20,38,60,.95);border:1px solid var(--edge);touch-action:none;-webkit-touch-callout:none}
 .label{display:block;color:#a7b9d1;font-size:11px;letter-spacing:.10em;text-transform:uppercase;font-weight:800;margin-bottom:8px}
+.phrase-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.phrase-top .label{margin:0}
 .target{font-size:20px;font-weight:650;line-height:1.35;min-height:28px;overflow-wrap:anywhere}
 .separator{height:1px;background:#334963;margin:13px 0}
 .entered{font-size:19px;font-weight:650;color:#9be9ff;line-height:1.4;min-height:49px;overflow-wrap:anywhere;white-space:pre-wrap;user-select:none;-webkit-user-select:none}
@@ -71,8 +73,9 @@ body{background:radial-gradient(ellipse at 50% 0%,#203d54 0%,#0c1c31 55%,#07111e
 .tiny-key.active{color:#572640;background:linear-gradient(160deg,#ffe0ee,#edadd1);border-color:#fbd6e8;box-shadow:inset 0 0 0 1px #ffffff57;z-index:2}
 .lower.is-dragging{background:#0e2d40}
 .small-help{color:#a6bcd4;font-size:12px;line-height:1.55;max-width:310px;text-align:center}
-.next{border:0;border-radius:12px;width:min(270px,100%);min-height:48px;background:#3f8de8;color:white;font-size:16px;font-weight:800;cursor:pointer;box-shadow:0 7px 17px #0005}
-.next:active{filter:brightness(1.2)}
+.next{flex:0 0 auto;border:1px solid #6f8cae;border-radius:9px;min-height:44px;min-width:112px;padding:0 10px;background:#20334a;color:#e4edfa;font-size:11px;font-weight:800;letter-spacing:.045em;cursor:pointer;box-shadow:inset 0 1px 0 #ffffff14;transition:background .16s ease,border-color .16s ease}
+.next:active{background:#344e6d;border-color:#a9c1df}
+.next:focus-visible{outline:2px solid #a8c6e6;outline-offset:2px}
 .next,.panel,.results button{touch-action:manipulation}
 .results{display:none;width:100%;background:#172b43;border:1px solid #3b566a;padding:17px;border-radius:14px}
 .results h2{font-size:21px;margin:0 0 10px}
@@ -90,7 +93,7 @@ body{background:radial-gradient(ellipse at 50% 0%,#203d54 0%,#0c1c31 55%,#07111e
 <body>
 <main class="shell">
   <section id="phrasePanel" class="panel">
-    <span class="label">Target phrase <span id="trialCount"></span></span>
+    <div class="phrase-top"><span class="label">Target phrase <span id="trialCount"></span></span><button id="nextBtn" class="next" type="button">NEXT →</button></div>
     <div id="target" class="target"></div><div class="separator"></div>
     <span class="label">Entered phrase</span><div id="entered" class="entered" aria-live="off"></div>
   </section>
@@ -114,7 +117,6 @@ body{background:radial-gradient(ellipse at 50% 0%,#203d54 0%,#0c1c31 55%,#07111e
       </div>
     </div>
   </section>
-  <button id="nextBtn" class="next" type="button">Next →</button>
   <section id="results" class="results" aria-live="polite">
     <h2>Prototype V4.1 results</h2>
     <p class="note">Practice measurements only. Compare with the instructor's scaffold under equivalent test conditions.</p>
@@ -271,7 +273,7 @@ els.pad.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
 function resetTrial(){
  active=null;trial=trial|0;typed='';caret=0;startedAt=null;deleteCount=0;gestureCount=0;cursorCount=0;
  els.target.textContent=PHRASES[trial];els.counter.textContent=`${trial+1} / ${PHRASES.length}`;drawEntered();clearMagnifier();
- els.panel.classList.remove('hidden-section');els.wrap.classList.remove('hidden-section');els.next.classList.remove('hidden-section');els.results.style.display='none';els.next.textContent=trial===PHRASES.length-1?'Finish →':'Next →';
+ els.panel.classList.remove('hidden-section');els.wrap.classList.remove('hidden-section');els.next.classList.remove('hidden-section');els.results.style.display='none';els.next.textContent=trial===PHRASES.length-1?'FINISH →':'NEXT →';
 }
 function editDistance(a,b){let old=Array.from({length:b.length+1},(_,i)=>i);for(let i=1;i<=a.length;i++){const neu=[i];for(let j=1;j<=b.length;j++)neu[j]=Math.min(neu[j-1]+1,old[j]+1,old[j-1]+(a[i-1]===b[j-1]?0:1));old=neu}return old[b.length]}
 function saveTrial(){
