@@ -28,6 +28,7 @@ h1{font-size:clamp(32px,7vw,54px);line-height:1.13;letter-spacing:-.05em;margin:
 a.button{font-size:13px;font-weight:780;text-decoration:none;border-radius:9px;min-height:43px;padding:12px 14px;background:#6daddf;color:#10243b;display:inline-flex;align-items:center;justify-content:center}
 a.button.secondary{background:#2b435b;color:#deecfa}
 .final a.button{background:#b9eecf;color:#1a4c32}
+.final a.button.secondary{background:#2b435b;color:#deecfa}
 a.button:focus-visible{outline:3px solid #e6f7ff;outline-offset:3px}
 a.button:hover{filter:brightness(1.09)}
 .note{font-size:14px;line-height:1.7;color:#a3b8ce;border-top:1px solid #30485d;padding-top:21px;margin-top:27px}
@@ -39,19 +40,19 @@ a.button:hover{filter:brightness(1.09)}
 <header>
 <div class="kicker">Team 6 · HCI Bakeoff 3</div>
 <h1>Two keyboard designs.<br>One final direction.</h1>
-<p class="lead">A physically calibrated 1 × 1 inch smartwatch text-entry challenge. We explored a grouped flick keyboard and a magnified QWERTY keyboard, then refined each concept.</p>
+<p class="lead">A physically calibrated 1 × 1 inch smartwatch text-entry challenge. We explored a grouped flick keyboard and a magnified QWERTY keyboard, then refined each concept. Each version offers a <strong>4-phrase Quick Test</strong> for homework practice and a <strong>10-phrase Full Test</strong> using randomized official phrases.</p>
 </header>
 <section class="group" aria-labelledby="first">
 <div class="grouphead"><h2 id="first">Design 1 · StarFlick</h2><small>Grouped touch-and-flick letters</small></div>
 <div class="cards">
-<article class="card"><div class="meta">V1 · First prototype</div><h3>StarFlick</h3><p>A compact nine-zone keyboard with flick gestures and radial letter feedback.</p><div class="buttons"><a class="button" href="prototype-v1/calibrate.html">Calibrate &amp; try</a><a class="button secondary" href="prototype-v1/index.html">Open</a></div></article>
-<article class="card"><div class="meta">V1 Updated · First refinement</div><h3>StarFlick Refined</h3><p>Improved directional selection, finger-aware feedback, and deliberate cancel gestures.</p><div class="buttons"><a class="button" href="prototype-v1-updated/calibrate.html">Calibrate &amp; try</a><a class="button secondary" href="prototype-v1-updated/index.html">Open</a></div></article>
+<article class="card"><div class="meta">V1 · First prototype</div><h3>StarFlick</h3><p>A compact nine-zone keyboard with flick gestures and radial letter feedback.</p><div class="buttons"><a class="button" href="prototype-v1/calibrate.html">Full test · 10</a><a class="button secondary" href="prototype-v1/calibrate.html?trials=4">Quick test · 4</a><a class="button secondary" href="prototype-v1/index.html">Preview</a></div></article>
+<article class="card"><div class="meta">V1 Updated · First refinement</div><h3>StarFlick Refined</h3><p>Improved directional selection, finger-aware feedback, and deliberate cancel gestures.</p><div class="buttons"><a class="button" href="prototype-v1-updated/calibrate.html">Full test · 10</a><a class="button secondary" href="prototype-v1-updated/calibrate.html?trials=4">Quick test · 4</a><a class="button secondary" href="prototype-v1-updated/index.html">Preview</a></div></article>
 </div></section>
 <section class="group" aria-labelledby="second">
 <div class="grouphead"><h2 id="second">Design 2 · Magnified QWERTY</h2><small>Familiar layout + enlarged selection</small></div>
 <div class="cards">
-<article class="card"><div class="meta">V2 · Second prototype</div><h3>Magnified QWERTY</h3><p>26 small QWERTY keys below a magnified letter preview, plus Delete, Space and a cursor joystick.</p><div class="buttons"><a class="button" href="prototype-v2/calibrate.html">Calibrate &amp; try</a><a class="button secondary" href="prototype-v2/index.html">Open</a></div></article>
-<article class="card final"><div class="meta">Final prototype · V2 Updated</div><h3>Magnified QWERTY Refined</h3><p>Stable five-letter window, soft pink selection, blue F/J anchors, pink Space and a separate green Next button.</p><div class="buttons"><a class="button" href="prototype-v2-updated/calibrate.html">Try the final prototype</a><a class="button secondary" href="prototype-v2-updated/index.html">Open</a></div></article>
+<article class="card"><div class="meta">V2 · Second prototype</div><h3>Magnified QWERTY</h3><p>26 small QWERTY keys below a magnified letter preview, plus Delete, Space and a cursor joystick.</p><div class="buttons"><a class="button" href="prototype-v2/calibrate.html">Full test · 10</a><a class="button secondary" href="prototype-v2/calibrate.html?trials=4">Quick test · 4</a><a class="button secondary" href="prototype-v2/index.html">Preview</a></div></article>
+<article class="card final"><div class="meta">Final prototype · V2 Updated</div><h3>Magnified QWERTY Refined</h3><p>Stable five-letter window, soft pink selection, blue F/J anchors, pink Space and a separate green Next button.</p><div class="buttons"><a class="button" href="prototype-v2-updated/calibrate.html">Full test · 10</a><a class="button secondary" href="prototype-v2-updated/calibrate.html?trials=4">Quick test · 4</a><a class="button secondary" href="prototype-v2-updated/index.html">Preview</a></div></article>
 </div></section>
 <footer class="note"><strong>Why Design 2?</strong> Informal team observations suggested QWERTY was easier for new users to learn, while StarFlick might reward returning users familiar with gestures. Formal WPM/accuracy results require recorded participant tests. For physical testing, use each prototype's calibration page and a ruler before starting. <a href="https://github.com/Bayleen/small-keyboard_HCI-hw_group6" style="color:#a9d8ff">Source &amp; README</a>.</footer>
 </main></body></html>

@@ -131,6 +131,7 @@ if(TEST_PARAMS.has('seed')){
 }
 for(let n=trialPool.length-1;n>0;n--){const j=Math.floor(rng()*(n+1));[trialPool[n],trialPool[j]]=[trialPool[j],trialPool[n]]}
 const PHRASES=trialPool.slice(0,DEMO_MODE?Math.min(TRIAL_COUNT,4):TRIAL_COUNT);
+const MODE_LABEL=DEMO_MODE?'DEMO':TRIAL_COUNT<10?'QUICK TEST':'FULL TEST';
 const PAD_KEY='starflickPadPx';
 const els={
  pad:document.getElementById('pad'),dial:document.getElementById('dial'),target:document.getElementById('target'),entered:document.getElementById('entered'),
@@ -154,7 +155,7 @@ function resetTrial(){
  if(active?.timer)clearTimeout(active.timer);active=null;els.dial.className='';
  document.querySelectorAll('.key.pressing').forEach(el=>el.classList.remove('pressing'));
  text='';caret=0;startedAt=null;deleteCount=0;gestureCount=0;cancelCount=0;cursorOperations=0;
- els.target.textContent=PHRASES[trialIndex];showEntered();els.counter.textContent=`${trialIndex+1} / ${PHRASES.length}`;
+ els.target.textContent=PHRASES[trialIndex];showEntered();els.counter.textContent=`${MODE_LABEL} · ${trialIndex+1}/${PHRASES.length}`;
  els.phrasePanel.classList.remove('hide');els.padWrap.classList.remove('hide');els.next.classList.remove('hide');els.results.style.display='none';
  els.next.textContent=trialIndex===PHRASES.length-1?'Finish →':'Next →';
   startedAt=officialStartedAt===null?null:performance.now();els.next.disabled=officialStartedAt===null;
@@ -312,7 +313,8 @@ function showOfficialScore(){
  const z=officialTotals();
  els.summary.style.whiteSpace='pre-line';
  els.summary.textContent=
-  'OFFICIAL WPM (WITH PENALTY): '+z.finalWpm.toFixed(2)+'\n'+
+  'MODE: '+MODE_LABEL+' ('+PHRASES.length+' phrases)\n' +
+   'OFFICIAL WPM (WITH PENALTY): '+z.finalWpm.toFixed(2)+'\n'+
   'Raw WPM: '+z.rawWpm.toFixed(2)+' · Penalty: '+z.penalty.toFixed(2)+'\n'+
   'Session time: '+(z.totalMs/1000).toFixed(1)+' sec · Entered / Expected: '+z.lettersEntered+' / '+z.lettersExpected+'\n'+
   'Errors (trimmed Levenshtein): '+z.errors+' · 5% free allowance: '+z.freebieErrors.toFixed(2)+'\n'+
@@ -334,7 +336,7 @@ function prepareSession(){
  trialIndex=0;records=[];officialStartedAt=null;officialFinishedAt=null;
  resetTrial();
  els.target.textContent='Tap START inside the keyboard';
- els.counter.textContent='0 / '+PHRASES.length;
+ els.counter.textContent=MODE_LABEL+' · 0/'+PHRASES.length;
  els.next.disabled=true;
  startOverlay.style.display='flex';
 }

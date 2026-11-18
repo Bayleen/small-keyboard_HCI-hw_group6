@@ -153,6 +153,7 @@ if(TEST_PARAMS.has('seed')){
 }
 for(let n=trialPool.length-1;n>0;n--){const j=Math.floor(rng()*(n+1));[trialPool[n],trialPool[j]]=[trialPool[j],trialPool[n]]}
 const PHRASES=trialPool.slice(0,DEMO_MODE?Math.min(TRIAL_COUNT,4):TRIAL_COUNT);
+const MODE_LABEL=DEMO_MODE?'DEMO':TRIAL_COUNT<10?'QUICK TEST':'FULL TEST';
 const STORE_KEY='starflickPadPx';
 const $=id=>document.getElementById(id);
 const els={pad:$('pad'),upper:$('upper'),lower:$('lower'),idle:$('idleControls'),mag:$('magnifier'),magLetters:$('magnifierLetters'),magLabel:$('magnifierLabel'),knob:$('knob'),target:$('target'),entered:$('entered'),counter:$('trialCount'),panel:$('phrasePanel'),wrap:$('padWrap'),next:$('nextBtn'),results:$('results'),rows:$('resultRows'),summary:$('summary'),restart:$('restartBtn')};
@@ -295,7 +296,7 @@ els.pad.addEventListener('contextmenu',e=>e.preventDefault());
 els.pad.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
 function resetTrial(){
  active=null;trial=trial|0;typed='';caret=0;startedAt=null;deleteCount=0;gestureCount=0;cursorCount=0;
- els.target.textContent=PHRASES[trial];els.counter.textContent=`${trial+1} / ${PHRASES.length}`;drawEntered();clearMagnifier();
+ els.target.textContent=PHRASES[trial];els.counter.textContent=`${MODE_LABEL} · ${trial+1}/${PHRASES.length}`;drawEntered();clearMagnifier();
  els.panel.classList.remove('hidden-section');els.wrap.classList.remove('hidden-section');els.next.classList.remove('hidden-section');els.results.style.display='none';els.next.textContent=trial===PHRASES.length-1?'FINISH →':'NEXT →';
   startedAt=officialStartedAt===null?null:performance.now();els.next.disabled=officialStartedAt===null;
 }
@@ -364,7 +365,8 @@ function showOfficialScore(){
  const z=officialTotals();
  els.summary.style.whiteSpace='pre-line';
  els.summary.textContent=
-  'OFFICIAL WPM (WITH PENALTY): '+z.finalWpm.toFixed(2)+'\n'+
+  'MODE: '+MODE_LABEL+' ('+PHRASES.length+' phrases)\n' +
+   'OFFICIAL WPM (WITH PENALTY): '+z.finalWpm.toFixed(2)+'\n'+
   'Raw WPM: '+z.rawWpm.toFixed(2)+' · Penalty: '+z.penalty.toFixed(2)+'\n'+
   'Session time: '+(z.totalMs/1000).toFixed(1)+' sec · Entered / Expected: '+z.lettersEntered+' / '+z.lettersExpected+'\n'+
   'Errors (trimmed Levenshtein): '+z.errors+' · 5% free allowance: '+z.freebieErrors.toFixed(2)+'\n'+
@@ -386,7 +388,7 @@ function prepareSession(){
  trial=0;records=[];officialStartedAt=null;officialFinishedAt=null;
  resetTrial();
  els.target.textContent='Tap START inside the keyboard';
- els.counter.textContent='0 / '+PHRASES.length;
+ els.counter.textContent=MODE_LABEL+' · 0/'+PHRASES.length;
  els.next.disabled=true;
  startOverlay.style.display='flex';
 }
