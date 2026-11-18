@@ -297,7 +297,7 @@ function resetTrial(){
  active=null;trial=trial|0;typed='';caret=0;startedAt=null;deleteCount=0;gestureCount=0;cursorCount=0;
  els.target.textContent=PHRASES[trial];els.counter.textContent=`${trial+1} / ${PHRASES.length}`;drawEntered();clearMagnifier();
  els.panel.classList.remove('hidden-section');els.wrap.classList.remove('hidden-section');els.next.classList.remove('hidden-section');els.results.style.display='none';els.next.textContent=trial===PHRASES.length-1?'FINISH →':'NEXT →';
-  startedAt=officialStartedAt;els.next.disabled=officialStartedAt===null;
+  startedAt=officialStartedAt===null?null:performance.now();els.next.disabled=officialStartedAt===null;
 }
 function editDistance(a,b){let old=Array.from({length:b.length+1},(_,i)=>i);for(let i=1;i<=a.length;i++){const neu=[i];for(let j=1;j<=b.length;j++)neu[j]=Math.min(neu[j-1]+1,old[j]+1,old[j-1]+(a[i-1]===b[j-1]?0:1));old=neu}return old[b.length]}
 function saveTrial(){
