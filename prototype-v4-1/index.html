@@ -32,10 +32,10 @@ body{background:radial-gradient(ellipse at 50% 0%,#203d54 0%,#0c1c31 55%,#07111e
 .tool .symbol{font-size:clamp(13px,calc(var(--pad-size)*.133),26px);font-weight:800}
 .tool .tool-name{font-size:clamp(6px,calc(var(--pad-size)*.044),9px);font-weight:850;letter-spacing:.035em}
 .tool.delete{width:29%;border-right:1px solid #3a5268;background:#233449;color:#ffa6b0}
-.tool.space{gap:7px;width:29%;position:relative;isolation:isolate;overflow:hidden;border-left:1px solid #91c4ff;background:linear-gradient(150deg,#bbdfff 0%,#76b7f4 46%,#4d90e3 100%);color:#163b68;box-shadow:inset 0 1px 0 #ffffffa6,inset 0 -2px 6px #235b9a33;transition:background .22s cubic-bezier(.22,1,.36,1),filter .2s ease,box-shadow .22s ease}
+.tool.space{gap:2px;width:29%;position:relative;isolation:isolate;overflow:hidden;border-left:1px solid #91c4ff;background:linear-gradient(150deg,#bbdfff 0%,#76b7f4 46%,#4d90e3 100%);color:#163b68;box-shadow:inset 0 1px 0 #ffffffa6,inset 0 -2px 6px #235b9a33;transition:background .22s cubic-bezier(.22,1,.36,1),filter .2s ease,box-shadow .22s ease}
 .tool.space .symbol{font-size:clamp(24px,calc(var(--pad-size)*.21),38px);line-height:1;color:#163b68;text-shadow:0 1px 0 #ffffff9e;font-weight:950}
 .tool.space .tool-name{color:#163b68;font-size:clamp(7px,calc(var(--pad-size)*.058),11px);letter-spacing:.025em}
-.tool.space .symbol,.tool.space .tool-name{position:relative;z-index:1}
+.tool.space .symbol,.tool.space .tool-name{position:relative;top:-5px;z-index:1}
 .tool.space::after{content:'';position:absolute;z-index:0;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 50%,#ffffffb3 0%,#d4ecff77 31%,#ffffff00 75%);opacity:0}
 .tool.space.space-pop::after{animation:spaceFlash .28s ease-out both}
 .tool.space.space-pop .symbol{animation:spaceBounce .28s cubic-bezier(.22,1,.36,1)}
@@ -53,14 +53,13 @@ body{background:radial-gradient(ellipse at 50% 0%,#203d54 0%,#0c1c31 55%,#07111e
 .tool.cursor.is-pressed{background:#1a4550}
 .magnifier{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:3px;padding:4px 2px 3px;background:radial-gradient(ellipse at 50% 44%,#22415b,#0b2235 78%);pointer-events:none;opacity:0;visibility:hidden;transition:opacity .22s cubic-bezier(.22,1,.36,1),visibility 0s linear .22s}
 .magnifier.visible{opacity:1;visibility:visible;transition:opacity .22s cubic-bezier(.22,1,.36,1),visibility 0s}
-.mag-label{height:12%;display:flex;align-items:center;justify-content:center;white-space:nowrap;color:#b8d9e6;font-size:clamp(6px,calc(var(--pad-size)*.046),9px);font-weight:850;letter-spacing:.045em}
+.mag-label{height:18%;display:flex;align-items:center;justify-content:center;white-space:nowrap;color:#d9e9f3;font-size:clamp(7px,calc(var(--pad-size)*.056),10px);font-weight:800;letter-spacing:.04em}
 .mag-letters{position:relative;display:grid;grid-template-columns:repeat(5,1fr);gap:2px;min-height:0;flex:1;align-items:stretch}
 .mag-focus{position:absolute;z-index:0;left:0;pointer-events:none;border-radius:6px;border:1px solid #ffcfdf;background:linear-gradient(155deg,#ffe1ec,#ee9fc6);box-shadow:inset 0 1px 0 #ffffff9c;transform:translate3d(0,0,0);transition:transform .22s cubic-bezier(.22,1,.36,1),width .22s cubic-bezier(.22,1,.36,1)}
 .mag-focus.no-motion{transition:none}
 .mag-letter{position:relative;z-index:1;border:1px solid #2e5570;background:transparent;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:clamp(13px,calc(var(--pad-size)*.124),22px);font-weight:800;color:#799aac;min-width:0;transition:color .22s cubic-bezier(.22,1,.36,1),border-color .22s ease,background-color .22s ease}
 .mag-letter.near{color:#c4dbe8;background:#24425850}
 .mag-letter.selected{color:#592540;background:transparent;border-color:#fff0f68f;font-weight:900;box-shadow:none}
-.mag-footer{height:14%;text-align:center;color:#a8dbe3;font-size:clamp(6px,calc(var(--pad-size)*.045),9px);font-weight:750;line-height:1.05}
 /* Bottom 50%: three tiny QWERTY rows only. */
 .lower{flex:1;min-height:0;width:100%;display:flex;flex-direction:column;justify-content:center;gap:2px;padding:3px 2px 4px;background:linear-gradient(165deg,#12263c,#0c1d30)}
 .letter-row{height:calc((100% - 4px)/3);min-height:0;display:flex;align-items:stretch;justify-content:center;gap:1px}
@@ -106,7 +105,6 @@ body{background:radial-gradient(ellipse at 50% 0%,#203d54 0%,#0c1c31 55%,#07111e
         <div id="magnifier" class="magnifier" aria-hidden="true">
           <div id="magnifierLabel" class="mag-label">MAGNIFIED SELECTION</div>
           <div id="magnifierLetters" class="mag-letters"></div>
-          <div class="mag-footer">DRAG TO ADJUST · RELEASE TO TYPE</div>
         </div>
       </div>
       <div id="lower" class="lower">
@@ -161,7 +159,7 @@ const magCells=Array.from({length:5},()=>{
 function setMagnifier(row,col){
  const s=ROWS[row],ch=s[col],windowSize=5,firstPreview=previewRow<0;
  setActiveKey(ch);
- els.magLabel.textContent=`ROW ${row+1} · ${ch.toUpperCase()} SELECTED`;
+ els.magLabel.textContent=`ROW ${row+1}  ·  SELECTED ${ch.toUpperCase()}`;
  // Do not scroll the preview while selection remains among these five letters.
  // If it leaves the window, recenter the new view to reduce repeated shifts.
  let rebuild=previewRow!==row;
