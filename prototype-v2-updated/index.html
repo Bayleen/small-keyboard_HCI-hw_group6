@@ -141,7 +141,7 @@ const DEMO_PHRASES=['the world is a stage','do not squander your time','we can l
 const TEST_PARAMS=new URLSearchParams(location.search);
 const DEMO_MODE=TEST_PARAMS.get('demo')==='1';
 const countParam=Number(TEST_PARAMS.get('trials'));
-const TRIAL_COUNT=Number.isInteger(countParam)&&countParam>=1&&countParam<=20?countParam:10;
+const TRIAL_COUNT=Number.isInteger(countParam)&&countParam>=1&&countParam<=20?countParam:4;
 const officialPool=window.BAKEOFF3_OFFICIAL_PHRASES;
 if(!Array.isArray(officialPool)||officialPool.length!==473)throw Error('Official Bakeoff 3 HTML phrase pool missing.');
 const trialPool=(DEMO_MODE?DEMO_PHRASES:officialPool).slice();
@@ -153,7 +153,7 @@ if(TEST_PARAMS.has('seed')){
 }
 for(let n=trialPool.length-1;n>0;n--){const j=Math.floor(rng()*(n+1));[trialPool[n],trialPool[j]]=[trialPool[j],trialPool[n]]}
 const PHRASES=trialPool.slice(0,DEMO_MODE?Math.min(TRIAL_COUNT,4):TRIAL_COUNT);
-const MODE_LABEL=DEMO_MODE?'DEMO':TRIAL_COUNT<10?'QUICK TEST':'FULL TEST';
+const MODE_LABEL=DEMO_MODE?'DEMO':TRIAL_COUNT<4?'QUICK TEST':'FULL TEST';
 const STORE_KEY='starflickPadPx';
 const $=id=>document.getElementById(id);
 const els={pad:$('pad'),upper:$('upper'),lower:$('lower'),idle:$('idleControls'),mag:$('magnifier'),magLetters:$('magnifierLetters'),magLabel:$('magnifierLabel'),knob:$('knob'),target:$('target'),entered:$('entered'),counter:$('trialCount'),panel:$('phrasePanel'),wrap:$('padWrap'),next:$('nextBtn'),results:$('results'),rows:$('resultRows'),summary:$('summary'),restart:$('restartBtn')};

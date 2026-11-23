@@ -26,9 +26,9 @@ The early experimental old V1 is **retired from the current branch**. It remains
 All four prototypes now use the **exact scoring equations from the uploaded official Bakeoff 3 HTML/Processing.js scaffold**; the keyboard layouts, letter-selection behavior and calibrated 1 × 1 inch interaction area are unchanged.
 
 - **START**: touch the START overlay **inside the one-inch keyboard area**. The continuous-session timer begins immediately.
-- **Phrases**: randomized from the [official HTML scaffold's 473 phrases](official-bakeoff3-phrases.js). Default = 10 phrases (the scaffold's comment suggests ~10 for the real bakeoff, while its debug default is 2).
-- **Quick Test (4 phrases)**: use the Quick Test button on the homepage or `calibrate.html?trials=4`. Every prototype draws four random phrases from the same official pool and uses the same scoring formula. This is for homework practice, not the official 10-phrase comparison.
-- **Full Test (10 phrases)**: use the homepage Full Test button or the normal calibration link; the default remains 10 randomized phrases. Calibration preserves `?trials=4` and optional `?seed=6`.
+- **Phrases**: randomized from the [official HTML scaffold's 473 phrases](official-bakeoff3-phrases.js). Default = 4 phrases (a project-specific short setting; the scaffold comments that the real bakeoff might use ~10, and its debug default is 2).
+- **Quick Test (2 phrases)**: use the Quick Test button on the homepage or `calibrate.html?trials=2`. Each prototype draws two random phrases from the same official pool and uses the same scoring formula. This is for quick homework practice.
+- **Full Test (4 phrases)**: use the homepage Full Test button or the normal calibration link; the default is now 4 randomized phrases as requested. Calibration preserves `?trials=2` and optional `?seed=6`. This does not change the instructor's scaffold.
 - **NEXT**: submit each phrase. Time continues throughout all phrases and ends at the **last NEXT**.
 - **Final score** (identical to the official HTML scaffold):
   - `enteredTotal = sum(entered.length)`
@@ -41,7 +41,7 @@ All four prototypes now use the **exact scoring equations from the uploaded offi
 - The per-trial WPM and accuracy figures remain diagnostic. Do **not** compare old per-trial-average screenshots with the official continuous-session WPM.
 - Results are displayed on the test page only. No CSV files are downloaded or saved, and test results are not archived in browser storage.
 
-**Matching tests across the two designs:** use the **same query parameters** for each version, e.g. `index.html?trials=10&seed=6` for the same randomized 10 official sentences in the same order. For four-phrase quick checks use `?trials=4&seed=6`. `?demo=1` uses the earlier four demo strings including `hfgwmcwx`; it is **not** formal scoring data.
+**Matching tests across the two designs:** use the **same query parameters** for each version, e.g. `index.html?trials=4&seed=6` for the same randomized 4 official sentences in the same order. For two-phrase quick checks use `?trials=2&seed=6`. `?demo=1` uses the earlier four demo strings including `hfgwmcwx`; it is **not** formal scoring data.
 
 **Calibrate before every device change:** the 1-inch size is still determined on `calibrate.html`, using a physical ruler. The START overlay is itself inside the pad (no forbidden outside controls).
 
